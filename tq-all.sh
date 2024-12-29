@@ -51,12 +51,12 @@ done
 ### Start THAME-Q Preprocess
 # Step 1. Realignment and Coregistration
 ${THAMEQDIR}/src/bash/tq_10_realign.sh
-qa_10=()
+status_10=()
 for ID in ${IDs[@]}; do
   if [[ -e ${ID}_t1w_r.nii ]] && [[ -e ${ID}_pmpbb3_dyn_mean.nii ]]; then
-    qa_10+=("OK")
+    status_10+=("OK")
   else
-    qa_10+=("NA")
+    status_10+=("NA")
     mkdir -p failed/tq_10/${ID}
     mv *${ID}* failed/tq_10/${ID}/
   fi
@@ -64,12 +64,12 @@ done
 
 # Step 2. Segmentation
 ${THAMEQDIR}/src/bash/tq_20_segmentation.sh
-qa_20=()
+status_20=()
 for ID in ${IDs[@]}; do
   if [[ -e c1${ID}_t1w_r.nii ]] && [[ -e c2${ID}_t1w_r.nii ]]; then
-    qa_20+=("OK")
+    status_20+=("OK")
   else
-    qa_20+=("NA")
+    status_20+=("NA")
     if [[ $(find . -name "*${ID}*" | wc -l) > 0 ]]; then
       mkdir -p failed/tq_20/${ID}
       mv *${ID}* failed/tq_20/${ID}
@@ -80,12 +80,12 @@ done
 # Step 3. Semi-Quantification
 # Gray Matter Reference
 ${THAMEQDIR}/src/bash/tq_30_suvr_im.sh
-qa_30=()
+status_30=()
 for ID in ${IDs[@]}; do
   if [[ -e ${ID}_pmpbb3_suvr_gm.nii.gz ]]; then
-    qa_30+=("OK")
+    status_30+=("OK")
   else
-    qa_30+=("NA")
+    status_30+=("NA")
     if [[ $(find . -name "*${ID}* | wc -l") > 0 ]]; then
       mkdir -p failed/tq_30/${ID}
       mv *${ID}* failed/tq_30/${ID}
@@ -95,12 +95,12 @@ done
 
 # White Matter Reference
 ${THAMEQDIR}/src/bash/tq_31_suvr_wm.sh
-qa_31=()
+status_31=()
 for ID in ${IDs[@]}; do
   if [[ -e ${ID}_pmpbb3_suvr_wm.nii.gz ]]; then
-    qa_31+=("OK")
+    status_31+=("OK")
   else
-    qa_31+=("NA")
+    status_31+=("NA")
     if [[ $(find . -name "*${ID}* | wc -l") > 0 ]]; then
       mkdir -p failed/tq_31/${ID}
       mv *${ID}* failed/tq_31/${ID}
@@ -111,12 +111,12 @@ done
 # Step 4. FreeSurfer Segmentation
 ${THAMEQDIR}/src/bash/tq_40_recon-all.sh
 
-qa_40=()
+status_40=()
 for ID in ${IDs[@]}; do
   if [[ -e ./subjects/${ID}/mri/wmparc.mgz ]]; then
-    qa_40+=("OK")
+    status_40+=("OK")
   else
-    qa_40+=("NA")
+    status_40+=("NA")
     if [[ $(find . -name "*${ID}* | wc -l") > 0 ]]; then
       mkdir -p failed/tq_40/${ID}/subjects
       mv *${ID}* failed/tq_40/${ID}
@@ -126,12 +126,12 @@ for ID in ${IDs[@]}; do
 done
 
 ${THAMEQDIR}/src/bash/tq_41_segmentBS.sh
-qa_41=()
+status_41=()
 for ID in ${IDs[@]}; do
   if [[ $(find subjects/${ID}/mri/brainstemSslabels*mgz | wc -l) > 0 ]]; then
-    qa_41+=("OK")
+    status_41+=("OK")
   else
-    qa_41+=("NA")
+    status_41+=("NA")
     if [[ $(find . -name "*${ID}* | wc -l") > 0 ]]; then
       mkdir -p failed/tq_41/${ID}/subjects
       mv *${ID}* failed/tq_41/${ID}
@@ -142,12 +142,12 @@ done
 
 # Cerebellum Reference
 ${THAMEQDIR}/src/bash/tq_42_suvr_cer.sh
-qa_42=()
+status_42=()
 for ID in ${IDs[@]}; do
   if [[ -e ${ID}_pmpbb3_suvr_cer.nii.gz ]]; then
-    qa_42+=("OK")
+    status_42+=("OK")
   else
-    qa_42+=("NA")
+    status_42+=("NA")
     if [[ $(find . -name "*${ID}* | wc -l") > 0 ]]; then
       mkdir -p failed/tq_42/${ID}/subjects
       mv *${ID}* failed/tq_42/${ID}
@@ -165,4 +165,10 @@ ${THAMEQDIR}/src/bash/tq_54_gen_table_merged_gm.sh
 ${THAMEQDIR}/src/bash/tq_55_gen_table_merged_wm.sh
 ${THAMEQDIR}/src/bash/tq_56_gen_table_merged_cer.sh
 
-exit
+timestamp=$(date +%Y%m%d_%H%M)
+echo "ID,tq_10,tq_20,tq_30,tq_31,tq_40,tq_41,tq_42" > Process_Status_${timestamp}.csv
+for ((i=0; i<${#ID[@]}; i++)); do
+  echo "${ID[$i]},${status_10[$i]},${status_20[$i]},${status_30[$i]},${status_31[$i]},${status_40[$i]},${status_41[$i]},${status_42[$i]}" >> Process_Status_${timestamp}.csv
+done
+
+
