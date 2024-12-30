@@ -70,7 +70,7 @@ for ID in ${IDs[@]}; do
     status_20+=("OK")
   else
     status_20+=("NA")
-    if [[ $(find . -name "*${ID}*" | wc -l) > 0 ]]; then
+    if [[ $(find . -maxdepth 1 -name "*${ID}*" | wc -l) > 0 ]]; then
       mkdir -p failed/tq_20/${ID}
       mv *${ID}* failed/tq_20/${ID}
     fi
@@ -82,11 +82,11 @@ done
 ${THAMEQDIR}/src/bash/tq_30_suvr_im.sh
 status_30=()
 for ID in ${IDs[@]}; do
-  if [[ -e ${ID}_pmpbb3_suvr_gm.nii.gz ]]; then
+  if [[ -e ${ID}_pmpbb3_suvr.nii.gz ]]; then
     status_30+=("OK")
   else
     status_30+=("NA")
-    if [[ $(find . -name "*${ID}* | wc -l") > 0 ]]; then
+    if [[ $(find . -maxdepth 1 -name "*${ID}* | wc -l") > 0 ]]; then
       mkdir -p failed/tq_30/${ID}
       mv *${ID}* failed/tq_30/${ID}
     fi
@@ -101,7 +101,7 @@ for ID in ${IDs[@]}; do
     status_31+=("OK")
   else
     status_31+=("NA")
-    if [[ $(find . -name "*${ID}* | wc -l") > 0 ]]; then
+    if [[ $(find . -maxdepth 1 -name "*${ID}* | wc -l") > 0 ]]; then
       mkdir -p failed/tq_31/${ID}
       mv *${ID}* failed/tq_31/${ID}
     fi
@@ -117,10 +117,10 @@ for ID in ${IDs[@]}; do
     status_40+=("OK")
   else
     status_40+=("NA")
-    if [[ $(find . -name "*${ID}* | wc -l") > 0 ]]; then
+    if [[ $(find . -maxdepth 1 -name "*${ID}* | wc -l") > 0 ]]; then
       mkdir -p failed/tq_40/${ID}/subjects
       mv *${ID}* failed/tq_40/${ID}
-      mv subjects/${ID} failed/tq_40/${ID}/subjects
+      [[ -e subjects/${ID} ]] && mv subjects/${ID} failed/tq_40/${ID}/subjects/
     fi
   fi
 done
@@ -128,14 +128,14 @@ done
 ${THAMEQDIR}/src/bash/tq_41_segmentBS.sh
 status_41=()
 for ID in ${IDs[@]}; do
-  if [[ $(find subjects/${ID}/mri/brainstemSslabels*mgz | wc -l) > 0 ]]; then
+  if [[ $(find subjects/${ID}/mri -name "brainstemSsLabels*mgz" | wc -l) > 0 ]]; then
     status_41+=("OK")
   else
     status_41+=("NA")
     if [[ $(find . -name "*${ID}* | wc -l") > 0 ]]; then
       mkdir -p failed/tq_41/${ID}/subjects
       mv *${ID}* failed/tq_41/${ID}
-      mv subjects/${ID} failed/tq_41/${ID}/subjects
+      [[ -e subjects/${ID} ]] && mv subjects/${ID} failed/tq_41/${ID}/subjects/
     fi
   fi
 done
@@ -151,7 +151,7 @@ for ID in ${IDs[@]}; do
     if [[ $(find . -name "*${ID}* | wc -l") > 0 ]]; then
       mkdir -p failed/tq_42/${ID}/subjects
       mv *${ID}* failed/tq_42/${ID}
-      mv subjects/${ID} failed/tq_42/${ID}/subjects
+      [[ -e subjects/${ID} ]] && mv subjects/${ID} failed/tq_42/${ID}/subjects/
     fi
   fi
 done
@@ -167,8 +167,8 @@ ${THAMEQDIR}/src/bash/tq_56_gen_table_merged_cer.sh
 
 timestamp=$(date +%Y%m%d_%H%M)
 echo "ID,tq_10,tq_20,tq_30,tq_31,tq_40,tq_41,tq_42" > Process_Status_${timestamp}.csv
-for ((i=0; i<${#ID[@]}; i++)); do
-  echo "${ID[$i]},${status_10[$i]},${status_20[$i]},${status_30[$i]},${status_31[$i]},${status_40[$i]},${status_41[$i]},${status_42[$i]}" >> Process_Status_${timestamp}.csv
+for ((i=0; i<${#IDs[@]}; i++)); do
+  echo "${IDs[$i]},${status_10[$i]},${status_20[$i]},${status_30[$i]},${status_31[$i]},${status_40[$i]},${status_41[$i]},${status_42[$i]}" >> Process_Status_${timestamp}.csv
 done
 
 
