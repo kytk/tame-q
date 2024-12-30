@@ -52,7 +52,7 @@ done
 ### Start THAME-Q Preprocess
 # Step 1. Realignment and Coregistration
 ${THAMEQDIR}/src/bash/tq_10_realign.sh
-rm ${ID[0]}_t1w_r.nii
+rm ${IDs[0]}_t1w_r.nii
 
 status_10=()
 for ID in ${IDs[@]}; do
@@ -67,7 +67,7 @@ done
 
 # Step 2. Segmentation
 ${THAMEQDIR}/src/bash/tq_20_segmentation.sh
-rm c1${ID[1]}_t1w_r.nii
+rm c1${IDs[1]}_t1w_r.nii
 
 status_20=()
 for ID in ${IDs[@]}; do
@@ -75,7 +75,7 @@ for ID in ${IDs[@]}; do
     status_20+=("OK")
   else
     status_20+=("NA")
-    if [[ $(find . -name "*${ID}*" | wc -l) > 0 ]]; then
+    if [[ $(find . -maxdepth 1 -name "*${ID}*" | wc -l) > 0 ]]; then
       mkdir -p failed/tq_20/${ID}
       mv *${ID}* failed/tq_20/${ID}
     fi
@@ -85,15 +85,15 @@ done
 # Step 3. Semi-Quantification
 # Gray Matter Reference
 ${THAMEQDIR}/src/bash/tq_30_suvr_im.sh
-rm c1${ID[2]}_pmpbb3_suvr_gm.nii
+rm ${IDs[2]}_pmpbb3_suvr.nii
 
 status_30=()
 for ID in ${IDs[@]}; do
-  if [[ -e ${ID}_pmpbb3_suvr_gm.nii.gz ]]; then
+  if [[ -e ${ID}_pmpbb3_suvr.nii.gz ]]; then
     status_30+=("OK")
   else
     status_30+=("NA")
-    if [[ $(find . -name "*${ID}* | wc -l") > 0 ]]; then
+    if [[ $(find . -maxdepth 1 -name "*${ID}* | wc -l") > 0 ]]; then
       mkdir -p failed/tq_30/${ID}
       mv *${ID}* failed/tq_30/${ID}
     fi
@@ -102,7 +102,7 @@ done
 
 # White Matter Reference
 ${THAMEQDIR}/src/bash/tq_31_suvr_wm.sh
-rm ${ID[3]}_pmpbb3_suvr_wm.nii
+rm ${IDs[3]}_pmpbb3_suvr_wm.nii
 
 status_31=()
 for ID in ${IDs[@]}; do
@@ -110,7 +110,7 @@ for ID in ${IDs[@]}; do
     status_31+=("OK")
   else
     status_31+=("NA")
-    if [[ $(find . -name "*${ID}* | wc -l") > 0 ]]; then
+    if [[ $(find . -maxdepth 1 -name "*${ID}* | wc -l") > 0 ]]; then
       mkdir -p failed/tq_31/${ID}
       mv *${ID}* failed/tq_31/${ID}
     fi
@@ -119,7 +119,7 @@ done
 
 # Step 4. FreeSurfer Segmentation
 ${THAMEQDIR}/src/bash/tq_40_recon-all.sh
-rm -rf subjects/${ID[4]}/mri/wmparc.mgz
+rm subjects/${IDs[4]}/mri/wmparc.mgz
 
 status_40=()
 for ID in ${IDs[@]}; do
@@ -127,33 +127,34 @@ for ID in ${IDs[@]}; do
     status_40+=("OK")
   else
     status_40+=("NA")
-    if [[ $(find . -name "*${ID}* | wc -l") > 0 ]]; then
+    if [[ $(find . -maxdepth 1 -name "*${ID}* | wc -l") > 0 ]]; then
       mkdir -p failed/tq_40/${ID}/subjects
       mv *${ID}* failed/tq_40/${ID}
-      mv subjects/${ID} failed/tq_40/${ID}/subjects
+      [[ -e subjects/${ID} ]] && mv subjects/${ID} failed/tq_40/${ID}/subjects/
     fi
   fi
 done
 
 ${THAMEQDIR}/src/bash/tq_41_segmentBS.sh
-rm -rf subjects/${ID[5]}/mri/brainstemSslabels*.mgz
+rm subjects/${IDs[5]}/mri/brainstemSsLabels*.mgz
 status_41=()
 for ID in ${IDs[@]}; do
-  if [[ $(find subjects/${ID}/mri/brainstemSslabels*mgz | wc -l) > 0 ]]; then
+  if [[ $(find subjects/${ID}/mri -name "brainstemSsLabels*mgz" | wc -l) > 0 ]]; then
     status_41+=("OK")
   else
     status_41+=("NA")
     if [[ $(find . -name "*${ID}* | wc -l") > 0 ]]; then
       mkdir -p failed/tq_41/${ID}/subjects
       mv *${ID}* failed/tq_41/${ID}
-      mv subjects/${ID} failed/tq_41/${ID}/subjects
+      [[ -e subjects/${ID} ]] && mv subjects/${ID} failed/tq_41/${ID}/subjects/
     fi
   fi
 done
 
 # Cerebellum Reference
 ${THAMEQDIR}/src/bash/tq_42_suvr_cer.sh
-rm ${ID[6]}_pmpbb3_suvr_cer.nii.gz
+rm ${IDs[6]}_pmpbb3_suvr_cer.nii.gz
+
 status_42=()
 for ID in ${IDs[@]}; do
   if [[ -e ${ID}_pmpbb3_suvr_cer.nii.gz ]]; then
@@ -163,7 +164,7 @@ for ID in ${IDs[@]}; do
     if [[ $(find . -name "*${ID}* | wc -l") > 0 ]]; then
       mkdir -p failed/tq_42/${ID}/subjects
       mv *${ID}* failed/tq_42/${ID}
-      mv subjects/${ID} failed/tq_42/${ID}/subjects
+      [[ -e subjects/${ID} ]] && mv subjects/${ID} failed/tq_42/${ID}/subjects/
     fi
   fi
 done
@@ -179,8 +180,8 @@ ${THAMEQDIR}/src/bash/tq_56_gen_table_merged_cer.sh
 
 timestamp=$(date +%Y%m%d_%H%M)
 echo "ID,tq_10,tq_20,tq_30,tq_31,tq_40,tq_41,tq_42" > Process_Status_${timestamp}.csv
-for ((i=0; i<${#ID[@]}; i++)); do
-  echo "${ID[$i]},${status_10[$i]},${status_20[$i]},${status_30[$i]},${status_31[$i]},${status_40[$i]},${status_41[$i]},${status_42[$i]}" >> Process_Status_${timestamp}.csv
+for ((i=0; i<${#IDs[@]}; i++)); do
+  echo "${IDs[$i]},${status_10[$i]},${status_20[$i]},${status_30[$i]},${status_31[$i]},${status_40[$i]},${status_41[$i]},${status_42[$i]}" >> Process_Status_${timestamp}.csv
 done
 
 
