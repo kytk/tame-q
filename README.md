@@ -33,6 +33,9 @@ Semi-Quantification is crucial for analyzing PET images. This process often invo
 
     # Install FreeSurfer
     ~/git/lin4neuro-jammy/installer-scripts/freesurfer7.4.1_installer.sh
+    
+    # Install tcsh
+    sudo apt-get install tcsh
     ```
 
 ## Preparing for THAME-Q Execution
