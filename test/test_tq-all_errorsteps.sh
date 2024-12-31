@@ -21,7 +21,7 @@ for f in [A-Z]*_t1w.nii*; do
 done
 
 if [[ ${#IDs[@]} > 1 ]]; then
-  echo -e "The below ${subjnum} IDs are detected:\n\n${subjlist}" | expand -t ${#g}
+  echo -e "The below ${#IDs[@]} IDs are detected:\n\n${subjlist}" | expand -t ${#g}
 elif [[ ${#IDs[@]} = 1 ]]; then
   echo -e "The below ID is detected:\n\n${subjlist}" | expand -t ${#g}
 else
@@ -85,7 +85,7 @@ done
 # Step 3. Semi-Quantification
 # Gray Matter Reference
 ${THAMEQDIR}/src/bash/tq_30_suvr_im.sh
-rm ${IDs[2]}_pmpbb3_suvr.nii
+rm ${IDs[2]}_pmpbb3_suvr.nii.gz
 
 status_30=()
 for ID in ${IDs[@]}; do
@@ -102,7 +102,7 @@ done
 
 # White Matter Reference
 ${THAMEQDIR}/src/bash/tq_31_suvr_wm.sh
-rm ${IDs[3]}_pmpbb3_suvr_wm.nii
+rm ${IDs[3]}_pmpbb3_suvr_wm.nii.gz
 
 status_31=()
 for ID in ${IDs[@]}; do
