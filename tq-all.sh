@@ -20,7 +20,7 @@ for f in [A-Z]*_t1w.nii*; do
 done
 
 if [[ ${#IDs[@]} > 1 ]]; then
-  echo -e "The below ${subjnum} IDs are detected:\n\n${subjlist}" | expand -t ${#g}
+  echo -e "The below ${#IDs[@]} IDs are detected:\n\n${subjlist}" | expand -t ${#g}
 elif [[ ${#IDs[@]} = 1 ]]; then
   echo -e "The below ID is detected:\n\n${subjlist}" | expand -t ${#g}
 else
