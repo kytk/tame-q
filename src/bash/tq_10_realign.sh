@@ -1,18 +1,26 @@
 #!/bin/bash
 
-# Part 1. Realign PMPBB3 PET to MRI
-# This script does
-# 1. realign T1 image to MNI152_T1_1mm_brain
-# 2. realign PMPBB3 dynamic PET image to T1
+### THAME-Q tq_10_realign.sh
+### Objectives:
+# This script is designed to realign MRI (T1-weighted) and dynamic PET images to a standard brain template (MNI152).
+# The process includes brain extraction, rigid body transformation, and realignment of individual PET frames.
 
-# Prerequisites
-# The first character of ID must be capital.
-# T1w: ${ID}_t1w.nii*
-# dynamic PET: ${ID}_pmpbb3_dyn.nii*
+### Prerequisites:
+# - FSL: Required for brain extraction, image realignment, etc. in this script.
 
-# Outputs
-# T1w: ${ID}_t1w_r.nii
-# dynamic PET: ${ID}_pmpbb3_dyn_mean.nii
+### Usage:
+# 1. Ensure input files (${ID}_t1w.nii and ${ID}_pmpbb3_dyn.nii) are in the directory.
+#    (The first character of ID must be capital.)
+# 2. Run the script: tq_10_realign.sh
+
+### Main Outputs:
+# ${ID}_t1w_r.nii: t1w image in MNI space
+# ${ID}_pmpbb3_dyn_mean.nii: static PET image in MNI space
+# ${ID}_t1w2MNI.mat: Rigid transformation matrix from t1 native space to MNI space
+
+### License:
+# This script is distributed under the GNU General Public License version 3.
+# See LICENSE file for details.
 
 # K. Nemoto and K. Nakayama 11 Jul 2023
 
