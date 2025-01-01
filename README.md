@@ -33,6 +33,7 @@ Semi-Quantification is crucial for analyzing PET images. This process often invo
 
     # Install FreeSurfer
     ~/git/lin4neuro-jammy/installer-scripts/freesurfer7.4.1_installer.sh
+    sudo FREESURFER_HOME=$FREESURFER_HOME /usr/local/freesurfer/7.4.1/bin/fs_install_mcr R2019b
     
     # Install tcsh
     sudo apt-get install tcsh
