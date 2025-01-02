@@ -16,8 +16,8 @@
 # 2. Run the script: tq_54_gen_table_merged_gm.sh
 
 ### Main Outputs:
-# - ${ID}_pmpbb3_suvr_wmparc_mean.tsv: A table of SUVR values for each ROI in wmparc, based on the gray matter reference for ${ID}.
-# - suvr_wmparc_mean_[timestamp].tsv: A consolidated table of SUVR values for wmparc ROIs across subjects, based on the gray matter reference.
+# - ${ID}_pmpbb3_suvr_wmparc_merged_mean.tsv: A table of SUVR values for each ROI in merged wmparc, based on the gray matter reference for ${ID}.
+# - suvr_wmparc_merged_mean_[timestamp].tsv: A consolidated table of SUVR values for merged wmparc ROIs across subjects, based on the gray matter reference.
 
 ### License:
 # This script is distributed under the GNU General Public License version 3.
