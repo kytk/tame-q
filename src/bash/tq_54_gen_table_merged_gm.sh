@@ -6,6 +6,7 @@
 
 ### Prerequisites:
 # - FSL: Required for image processing.
+# - FreeSurfer: Required for conversion from mgz to NIfTI format.
 
 ### Usage:
 # 1. Ensure the following files are present in the directory:
