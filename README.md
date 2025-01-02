@@ -26,6 +26,8 @@ Semi-Quantification is crucial for analyzing PET images. This process often invo
     # Clone the THAME-Q repository
     cd ~/git
     git clone git@github.com:kytk/thame-q.git
+    echo -e "\n# THAME-Q" >> ~/.bash_aliases
+    echo 'export PATH=$PATH:/home/brain/git/thame-q' >> ~/.bash_aliases
 
     # Update installer scripts
     cd ~/git/lin4neuro-jammy
