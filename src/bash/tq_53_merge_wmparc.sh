@@ -1,17 +1,33 @@
 #!/bin/bash
 
-# Merge wmparc ROIs for the volume stability.
+### THAME-Q tq_53_merge_wmparc.sh
+### Objectives:
+# This script creates a merged atlas, `wmparc_merged`, by combining smaller cortical areas in the wmparc into anatomically unified regions.
+# This merging is intended to increase the sampling size for each ROI, contributing to more stable SUVR values across ROIs.
 
-# This script merge ROIs as below:
-# 1. caudalmiddlefrontal (?003), rostralmiddlefrontal (?027) --> middlefrontal(?003)
-# 2. parsopercularis (?018), parstriangularis (?019), parsorbitalis (?020) --> inferiorfrontal (?018)
-# 3. lateralorbitofrontal (?012), medialorbitofrontal (?014), frontalpole (?032) --> orbitofrontal (?012)
-# 4. caudalanteriorcingulate (?002), isthmuscingulate (?010), posteriorcingulate (?023), rostralanteriorcingulate (?026) --> cingulate
+### Prerequisites:
+# - FSL: Required for image processing.
+
+### Usage:
+# 1. Ensure the following file is present in the directory:
+#    - ${ID}_pmpbb3_wmparc_r.nii.gz
+# 2. Run the script: tq_53_merge_wmparc.sh
+
+### Main Outputs:
+# - ${ID}_wmparc_merged_r.nii.gz: The ROI map image of `wmparc_merged` with smaller regions merged into larger, anatomically unified areas.
+
+### License:
+# This script is distributed under the GNU General Public License version 3.
+# See LICENSE file for details.
 
 # K. Nakayama 08 Aug 2024
 
-# For debugging
+# For Debug
 #set -x
+
+# Load environment variable
+THAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
+source ${THAMEQDIR}/config.env
 
 for f in *_wmparc_r.nii.gz
 do
