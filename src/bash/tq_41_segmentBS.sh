@@ -1,9 +1,20 @@
 #!/bin/bash
 
-# Calculating SUVR of PMPBB3 PET
-# Part 4. brainstem segmentation of (realigned) MRI
+### Objectives:
+# This script performs parcellation of brainstem structures using the Bayesian segmentation 
+# method incorporated in FreeSurfer, applied to T1-weighted images.
 
-# This script does segmentBS.sh for T1w image(s) in parallel.
+### Prerequisites:
+# - FreeSurfer: Required for the Bayesian segmentation of brainstem structures.
+
+### Usage:
+# 1. Ensure the following files and directories are present in the working directory:
+#    - ${ID}_t1w_r.nii
+#    - subjects/${ID} (the output directory from FreeSurfer's recon-all command)
+# 2. Run the script: tq_41_segmentBS.sh
+
+### Main Outputs:
+# subjects/${ID}: The subject-specific output directory containing brainstem parcellation.
 
 # 09 May 2023 K. Nemoto and K. Nakayama
 
