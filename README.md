@@ -34,6 +34,10 @@ Semi-Quantification is crucial for analyzing PET images. This process often invo
     # Install FreeSurfer
     # Get license.txt from FreeSurfer registration (https://surfer.nmr.mgh.harvard.edu/registration.html).
     # Place license.txt in ~/Downloads before the below process.
+    # The below command ask you 2 questions.
+    # - Are you sure you want to begin the installation of FreeSurfer? (yes/no)
+    # - Do you want to modify recon-all for VirtualBox environment? (yes/no)
+    # Please return "yes" to both questions.
     ~/git/lin4neuro-jammy/installer-scripts/freesurfer7.4.1_installer.sh
 
     # HERE, PLEASE REBOOT TERMINAL
