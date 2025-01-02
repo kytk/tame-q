@@ -1,18 +1,35 @@
 #!/bin/bash
 
-# Calculating SUVR of PMPBB3 PET
-# Part 5. Calculate SUVR for cortex regions
+### THAME-Q tq_42_suvr_cer.sh
+### Objectives:
+# This script performs semi-quantification of static PET images using cerebellum reference, generating SUVR images.
 
-# This script does
-# 1. generate cortical region of interests (ROIs) from aseg and DKT atlas
-# 2. extract mean SUVRs for each ROI
-# 3. generate a table with timestamp
+### Prerequisites:
+# - FSL: Required for image processing.
+# - FreeSurfer: Required for convertion from mgz to NIfTI.
 
-# K. Nemoto and K. Nakayama 09 May 2023
+### Usage:
+# 1. Ensure the following files are present in the directory:
+#    - ${ID}_pmpbb3_dyn_mean.nii
+#    - subjects/${ID}/mri/wmparc.mgz
+# 2. Run the script: tq_42_suvr_cer.sh
 
-# For debugging
+### Main Outputs:
+# ${ID}_pmpbb3_suvr_cer.nii.gz: SUVR PET image based on the cerebellum cortex signal intensity.
+# ${ID}_wmparc_r.nii.gz: Brain parcellation image.
+
+### License:
+# This script is distributed under the GNU General Public License version 3.
+# See LICENSE file for details.
+
+# K. Nakayama 21 Mar 2023
+
+# For Debug
 #set -x
 
+# Load environment variable
+THAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
+source ${THAMEQDIR}/config.env
 export SUBJECTS_DIR=$PWD/subjects
 
 for f in *_pmpbb3_dyn_mean.nii
