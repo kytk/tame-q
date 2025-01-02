@@ -10,7 +10,7 @@
 
 ### Usage:
 # 1. Ensure the following files are present in the directory:
-#    - ${ID}_pmpbb3_dyn_suvr.nii.gz
+#    - ${ID}_pmpbb3_suvr.nii.gz
 #    - ${ID}_wmparc_merged_r.nii.gz
 #    - subjects/${ID}/mri/brainstemSsLabels.v??.FSvoxelSpace.mgz
 # 2. Run the script: tq_54_gen_table_merged_gm.sh
