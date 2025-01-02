@@ -41,8 +41,8 @@ Semi-Quantification is crucial for analyzing PET images. This process often invo
     # Install MCR R2019b for Brainstem Segmentation
     sudo FREESURFER_HOME=$FREESURFER_HOME /usr/local/freesurfer/7.4.1/bin/fs_install_mcr R2019b
     
-    # Install tcsh
-    sudo apt-get install tcsh
+    # Install required packages
+    sudo apt install bc dc tcsh
     ```
 
 ## Preparing for THAME-Q Execution
