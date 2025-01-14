@@ -3,7 +3,8 @@
 #set -x
 
 # Load environment variable
-THAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; pwd)
+# THAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; pwd)
+THAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd .. ; pwd)
 source ${THAMEQDIR}/config.env
 
 echo "THAME-Q Pipeline"
@@ -51,6 +52,8 @@ done
 ### Start THAME-Q Preprocess
 # Step 1. Realignment and Coregistration
 ${THAMEQDIR}/src/bash/tq_10_realign.sh
+rm ${IDs[0]}_t1w_r.nii
+
 status_10=()
 for ID in ${IDs[@]}; do
   if [[ -e ${ID}_t1w_r.nii ]] && [[ -e ${ID}_pmpbb3_dyn_mean.nii ]]; then
@@ -64,6 +67,8 @@ done
 
 # Step 2. Segmentation
 ${THAMEQDIR}/src/bash/tq_20_segmentation.sh
+rm c1${IDs[1]}_t1w_r.nii
+
 status_20=()
 for ID in ${IDs[@]}; do
   if [[ -e c1${ID}_t1w_r.nii ]] && [[ -e c2${ID}_t1w_r.nii ]]; then
@@ -80,6 +85,8 @@ done
 # Step 3. Semi-Quantification
 # Gray Matter Reference
 ${THAMEQDIR}/src/bash/tq_30_suvr_im.sh
+rm ${IDs[2]}_pmpbb3_suvr.nii.gz
+
 status_30=()
 for ID in ${IDs[@]}; do
   if [[ -e ${ID}_pmpbb3_suvr.nii.gz ]]; then
@@ -95,6 +102,8 @@ done
 
 # White Matter Reference
 ${THAMEQDIR}/src/bash/tq_31_suvr_wm.sh
+rm ${IDs[3]}_pmpbb3_suvr_wm.nii.gz
+
 status_31=()
 for ID in ${IDs[@]}; do
   if [[ -e ${ID}_pmpbb3_suvr_wm.nii.gz ]]; then
@@ -110,6 +119,7 @@ done
 
 # Step 4. FreeSurfer Segmentation
 ${THAMEQDIR}/src/bash/tq_40_recon-all.sh
+rm subjects/${IDs[4]}/mri/wmparc.mgz
 
 status_40=()
 for ID in ${IDs[@]}; do
@@ -126,6 +136,7 @@ for ID in ${IDs[@]}; do
 done
 
 ${THAMEQDIR}/src/bash/tq_41_segmentBS.sh
+rm subjects/${IDs[5]}/mri/brainstemSsLabels*.mgz
 status_41=()
 for ID in ${IDs[@]}; do
   if [[ $(find subjects/${ID}/mri -name "brainstemSsLabels*mgz" | wc -l) > 0 ]]; then
@@ -142,6 +153,8 @@ done
 
 # Cerebellum Reference
 ${THAMEQDIR}/src/bash/tq_42_suvr_cer.sh
+rm ${IDs[6]}_pmpbb3_suvr_cer.nii.gz
+
 status_42=()
 for ID in ${IDs[@]}; do
   if [[ -e ${ID}_pmpbb3_suvr_cer.nii.gz ]]; then

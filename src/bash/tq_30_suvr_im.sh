@@ -1,13 +1,34 @@
 #!/bin/bash
 
-# Calculating SUVR of PMPBB3 PET
-# Part 3. Generate SUVR image(s) of PMPBB3 PET
+### THAME-Q tq_30_suvr_im.sh
+### Objectives:
+# This script performs semi-quantification of static PET images using bi-modal curve fitting based on gray matter signals, generating SUVR images.
 
-# This script does
-# 1. estimate reference value based on Tagai et al. 2022
-# 2. generate SUVR images of PMPBB3
+### Prerequisites:
+# - FSL: Required for image processing tasks such as creating gray matter masks.
+# - Python3: Required for determining reference values through curve fitting.
+
+### Usage:
+# 1. Ensure the following files are present in the directory:
+#    - ${ID}_t1w_r.nii
+#    - c1${ID}_t1w_r_q.nii.gz
+#    - ${ID}_t1w_brain_mask.nii
+#    - ${ID}_t1w2MNI.mat
+#    - ${ID}_pmpbb3_dyn_mean.nii
+# 2. Run the script: tq_30_suvr_im.sh
+
+### Main Outputs:
+# ${ID}_pmpbb3_suvr.nii.gz: SUVR PET image based on the gray matter signal intensity
+# histogram_GMref: Reference voxel images and results of curve fitting in the directory
+
+### License:
+# This script is distributed under the GNU General Public License version 3.
+# See LICENSE file for details.
 
 # K. Nakayama 21 Mar 2023
+
+# For Debug
+#set -x
 
 # Load environment variable
 THAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)

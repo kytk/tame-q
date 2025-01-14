@@ -1,6 +1,33 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+### THAME-Q get_ref.py
+### Objectives:
+# This script is part of the THAME-Q pipeline and is responsible for determining data-driven reference values 
+# through curve fitting based on signals within gray/white matter regions.
+
+### Prerequisites:
+# The following Python libraries are required:
+#    - NumPy
+#    - Nibabel
+#    - Matplotlib
+#    - Scipy
+
+### Usage:
+# Run the script using the following command:
+# python get_ref.py [ID] [static PET image] [mask image specifying the target region] [output directory]
+# The reference value will be returned as standard output.
+
+### Main Outputs:
+# - output_directory/${ID}_histogram.png: A visual representation of the curve fitting process used for signal value determination.
+# - output_directory/${ID}_reference.nii: A voxel map image used for the final reference value determination.
+
+### License:
+# This script is distributed under the GNU General Public License version 3.
+# See LICENSE file for details.
+
+# K. Nemoto and K. Nakayama 11 Jul 2023
+
 import os, sys
 import numpy as np
 import nibabel as nib

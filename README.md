@@ -25,14 +25,30 @@ Semi-Quantification is crucial for analyzing PET images. This process often invo
     ```bash
     # Clone the THAME-Q repository
     cd ~/git
-    git clone https:github.com/kytk/thameq.git
+    git clone git@github.com:kytk/thame-q.git
+    echo -e "\n# THAME-Q" >> ~/.bash_aliases
+    echo 'export PATH=$PATH:/home/brain/git/thame-q' >> ~/.bash_aliases
 
     # Update installer scripts
     cd ~/git/lin4neuro-jammy
     git pull
 
     # Install FreeSurfer
+    # Get license.txt from FreeSurfer registration (https://surfer.nmr.mgh.harvard.edu/registration.html).
+    # Place license.txt in ~/Downloads before the below process.
+    # The below command ask you 2 questions.
+    # - Are you sure you want to begin the installation of FreeSurfer? (yes/no)
+    # - Do you want to modify recon-all for VirtualBox environment? (yes/no)
+    # Please return "yes" to both questions.
     ~/git/lin4neuro-jammy/installer-scripts/freesurfer7.4.1_installer.sh
+
+    # HERE, PLEASE REBOOT TERMINAL
+
+    # Install MCR R2019b for Brainstem Segmentation
+    sudo FREESURFER_HOME=$FREESURFER_HOME /usr/local/freesurfer/7.4.1/bin/fs_install_mcr R2019b
+    
+    # Install required packages
+    sudo apt install bc dc tcsh
     ```
 
 ## Preparing for THAME-Q Execution

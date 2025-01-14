@@ -1,15 +1,23 @@
 #!/bin/bash
 
-# Calculating SUVR of PMPBB3 PET
-# Part 4. Recon-all of (realigned) MRI
+### Objectives:
+# This script performs cortical parcellation on T1-weighted images using FreeSurfer.
 
-# This script does recon-all for T1w image(s) in parallel.
+### Prerequisites:
+# - FreeSurfer: Required for cortical parcellation.
+
+### Usage:
+# 1. Ensure the following file is present in the directory:
+#    - ${ID}_t1w_r.nii
+# 2. Run the script: tq_40_recon-all.sh
+
+### Main Outputs:
+# subjects/${ID}: The output directory containing FreeSurfer results for each subject.
 
 # 18 Mar 2023 K.Nemoto
 
 # For debugging
 #set -x 
-
 
 [ ! -d subjects ] && mkdir subjects
 export SUBJECTS_DIR=$PWD/subjects

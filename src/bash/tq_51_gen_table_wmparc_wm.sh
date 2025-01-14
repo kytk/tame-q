@@ -1,23 +1,41 @@
 #!/bin/bash
 
-# Calculating SUVR of PMPBB3 PET
-# Part 5. Calculate SUVR for cortex regions
+### THAME-Q tq_51_gen_table_wmparc_wm.sh
+### Objectives:
+# This script generates a table of SUVR values for each ROI in wmparc based on semi-quantification using the white matter reference.
 
-# This script does
-# 1. generate cortical region of interests (ROIs) from aseg and DKT atlas
-# 2. extract mean SUVRs for each ROI
-# 3. generate a table with timestamp
+### Prerequisites:
+# - FSL: Required for image processing.
+# - FreeSurfer: Required for conversion from mgz to NIfTI format.
+
+### Usage:
+# 1. Ensure the following files are present in the directory:
+#    - ${ID}_pmpbb3_dyn_suvr_wm.nii.gz
+#    - subjects/${ID}/mri/wmparc.mgz
+#    - subjects/${ID}/mri/brainstemSsLabels.v??.FSvoxelSpace.mgz
+# 2. Run the script: tq_51_gen_table_wmparc_wm.sh
+
+### Main Outputs:
+# - ${ID}_pmpbb3_suvr_wm_wmparc_mean.tsv: A table of SUVR values for each ROI in wmparc, based on the white matter reference for ${ID}.
+# - suvr_wmparc_wm_mean_[timestamp].tsv: A consolidated table of SUVR values for wmparc ROIs across subjects, based on the white matter reference.
+
+### License:
+# This script is distributed under the GNU General Public License version 3.
+# See LICENSE file for details.
 
 # K. Nemoto and K. Nakayama 09 May 2023
 
-# For debugging
+# For Debug
 #set -x
 
+# Load environment variable
+THAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
+source ${THAMEQDIR}/config.env
 export SUBJECTS_DIR=$PWD/subjects
 
-for f in *_pmpbb3_dyn_mean.nii
+for f in *_pmpbb3_suvr_wm.nii.gz
 do
-  fsid=${f%_pmpbb3_dyn_mean.nii}
+  fsid=${f%_pmpbb3_suvr_wm.nii.gz}
   wmparc=${fsid}_wmparc
   
   # copy wmparc.mgz, add fsid, and convert to nii.gz
