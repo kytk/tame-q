@@ -39,10 +39,13 @@ fi
 # Copy .m file to pwd
 cp ${THAMEQDIR}/src/matlab/segmentation.m $PWD
 
+# Get MCR version
+MCRVER=$(cat ${SPM12STANDALONEDIR}/readme.txt | grep run_spm12.sh | grep /mathworks/home/application | awk -F/ '{print $NF}')
+
 # Run segmentation.m
 #/usr/local/spm12_standalone/run_spm12.sh /usr/local/MATLAB/MCR/v99 batch ./segmentation.m
 #spm batch ./segmentation.m
-${SPM12STANDALONEDIR}/run_spm12.sh ${MCRDIR}/v99 batch ./segmentation.m
+${SPM12STANDALONEDIR}/run_spm12.sh ${MCRDIR}/${MCRVER} batch ./segmentation.m
 
 if [ $? -ne 0 ]; then
   echo "SPM12 standalone does not work correctly."
