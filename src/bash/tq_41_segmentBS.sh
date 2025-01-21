@@ -72,11 +72,11 @@ fi
 #segmentBS.sh
 for f in *_t1w_r.nii*
 do
-  running=$(ps -aux | grep 'bin/segmentBS.sh' | wc -l)
+  running=$(ps x | grep [b]in/segmentBS.sh | awk -F ' ' '{print $(NF-2)}' | sort | uniq | wc -l)
   while [ $running -gt $maxrunning ];
   do
     sleep 1m
-    running=$(ps -aux | grep 'bin/segmentBS.sh' | wc -l)
+    running=$(ps x | grep [b]in/segmentBS.sh | awk -F ' ' '{print $(NF-2)}' | sort | uniq | wc -l)
   done
 
   # c[12]*.nii* , iy_*.nii*, or y_*.nii* are excluded
@@ -92,10 +92,11 @@ do
   fi
 done
 
-while [ ${running} -gt 1 ];
+running=$(ps x | grep [b]in/segmentBS.sh | awk -F ' ' '{print $(NF-2)}' | sort | uniq | wc -l)
+while [ ${running} -gt 0 ];
 do
   sleep 1m
-  running=$(ps -aux | grep 'bin/segmentBS.sh' | wc -l)
+  running=$(ps x | grep [b]in/segmentBS.sh | awk -F ' ' '{print $(NF-2)}' | sort | uniq | wc -l)
 done
 
 exit
