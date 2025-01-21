@@ -225,4 +225,4 @@ paste colheader_merged.txt *_suvr_wm_wmparc_merged_mean.tsv > suvr_wm_wmparc_mer
 
 rm colheader_merged.txt tmp_*_suvr_wm_wmparc_merged_mean_?000 tmp_*_suvr_wm_bsseg_mean *_r_?000.nii.gz
 
-echo "Done. Please check suvr_wm_wmparc_merged_${timestamp}.tsv"
+echo "Done. Please check suvr_wm_wmparc_merged_mean_${timestamp}.tsv"
