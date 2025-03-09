@@ -264,4 +264,4 @@ paste colheader_wmparc.txt *_suvr_wmparc_mean.tsv > suvr_wmparc_mean_${timestamp
 
 rm colheader_wmparc.txt tmp_*_suvr_wmparc_mean_?000 tmp_*_suvr_bsseg_mean *_r_?000.nii.gz
 
-echo "Done. Please check suvr_wmparc_gm_${timestamp}.tsv"
+echo "Done. Please check suvr_wmparc_mean_${timestamp}.tsv"

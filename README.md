@@ -4,6 +4,7 @@
 Semi-Quantification is crucial for analyzing PET images. This process often involves multiple complex steps and tools. THAME-Q aims to streamline these processes into a single, efficient workflow.
 
 ## Overview
+![image](https://github.com/user-attachments/assets/a0a86419-9ea9-4a8a-86ba-57fa835ebde0)
 - This project aims to calculate SUVR images and SUVR values for each region from PMPBB3 PET data.
 - The project consists of the following scripts:
 
