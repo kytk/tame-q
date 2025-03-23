@@ -48,7 +48,7 @@ else
 fi
  
 echo "Overlay SUVR image onto T1w image"
-python ${THAMEQ}/src/python/overlay_view_cor.py ${ID} ${t1w_l} ${pet_l} ${THR} ${UTHR} ${ID}_overview_cor_t1.png ${ID}_overview_cor_${THR}_${UTHR}.png
+python ${THAMEQDIR}/src/python/overlay_view_cor.py ${ID} ${t1w_l} ${pet_l} ${THR} ${UTHR} ${ID}_overview_cor_t1.png ${ID}_overview_cor_${THR}_${UTHR}.png
 # rm ${t1w_l} ${pet_l}
 
 exit

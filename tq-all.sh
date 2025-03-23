@@ -165,6 +165,12 @@ ${THAMEQDIR}/src/bash/tq_54_gen_table_merged_gm.sh
 ${THAMEQDIR}/src/bash/tq_55_gen_table_merged_wm.sh
 ${THAMEQDIR}/src/bash/tq_56_gen_table_merged_cer.sh
 
+# Step 6. Get Overview
+for ID in ${IDs[@]}; do
+  ${THAMEQDIR}/src/bash/tq_60_overview_axi.sh -i ${ID} -a 1 -b 2
+  ${THAMEQDIR}/src/bash/tq_61_overview_cor.sh -i ${ID} -a 1 -b 2
+done
+
 timestamp=$(date +%Y%m%d_%H%M)
 echo "ID,tq_10,tq_20,tq_30,tq_31,tq_40,tq_41,tq_42" > Process_Status_${timestamp}.csv
 for ((i=0; i<${#IDs[@]}; i++)); do
