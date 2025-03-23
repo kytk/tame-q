@@ -20,37 +20,9 @@ Semi-Quantification is crucial for analyzing PET images. This process often invo
 - The recommended setup involves running Lin4Neuro on VirtualBox, but the scripts can also run on individual environments where the above software is installed. In such cases, please ensure to appropriately modify the path of config.env to match your environment.
 
 ## Recommended Environment Setup
-- Install VirtualBox and download Lin4Neuro 22.04 from [nemotos.net](https://www.nemotos.net/?page_id=29). Refer to nemotos.net for detailed instructions about L4N installation.
-- Once Lin4Neuro is imported, launch a terminal and run the following commands:
-
-    ```bash
-    # Clone the THAME-Q repository
-    cd ~/git
-    git clone git@github.com:kytk/thame-q.git
-    echo -e "\n# THAME-Q" >> ~/.bash_aliases
-    echo 'export PATH=$PATH:/home/brain/git/thame-q' >> ~/.bash_aliases
-
-    # Update installer scripts
-    cd ~/git/lin4neuro-jammy
-    git pull
-
-    # Install FreeSurfer
-    # Get license.txt from FreeSurfer registration (https://surfer.nmr.mgh.harvard.edu/registration.html).
-    # Place license.txt in ~/Downloads before the below process.
-    # The below command ask you 2 questions.
-    # - Are you sure you want to begin the installation of FreeSurfer? (yes/no)
-    # - Do you want to modify recon-all for VirtualBox environment? (yes/no)
-    # Please return "yes" to both questions.
-    ~/git/lin4neuro-jammy/installer-scripts/freesurfer7.4.1_installer.sh
-
-    # HERE, PLEASE REBOOT TERMINAL
-
-    # Install MCR R2019b for Brainstem Segmentation
-    sudo FREESURFER_HOME=$FREESURFER_HOME /usr/local/freesurfer/7.4.1/bin/fs_install_mcr R2019b
-    
-    # Install required packages
-    sudo apt install bc dc tcsh
-    ```
+- Install VirtualBox and download Lin4Neuro 22.04 optimized for THAME-Q from [nemotos.net](https://www.nemotos.net/?page_id=29). Refer to nemotos.net for detailed instructions about L4N installation.
+- THAME-Q repository is already available under /home/user/git in this environment.
+- To ensure you have the latest updates to the scripts, we kindly ask that you re-clone the repository using git clone.
 
 ## Preparing for THAME-Q Execution
 - THAME-Q identifies the image pairs to process based on file naming conventions. Rename the files you wish to process according to the following rules:
