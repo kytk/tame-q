@@ -99,23 +99,20 @@ do
   echo "${t1w%_t1w},$DICE_T1W,$Dx_T1W,$Dy_T1W,$Dz_T1W,$Rx_T1W,$Ry_T1W,$Rz_T1W" >> ${QCT1W}
 
   # Define the reference image of PET
-  petref=${t1w}_r
+  #petref=${t1w}_r
   ###############################
   # This script creates PET Mean image by aligning each PET frame to the t1w image.
   # If you want PET Mean image created by the method written in K.Tagai(2022),
   # please revive the below commentout-commands
   
-<< COMMENTOUT
+#<< COMMENTOUT
   # Calculate a mean image from first two images of PET
   echo "Calculate a mean image of PET"
   fslroi ${pet} ${pet}_two 0 2 
   fslmaths ${pet}_two -Tmean ${pet}_m
   
-  # Realign mean PET to realigned T1
-  echo "Realign mean PET to realigned T1"
-  flirt -dof 6 -in ${pet}_m -ref ${t1w}_r -out ${pet}_mr
-  petref=${pet}_mr
-COMMENTOUT
+  petref=${pet}_m
+#COMMENTOUT
 
   ###############################
 
@@ -125,35 +122,27 @@ COMMENTOUT
   
   ## Which PET frame shows the highest Dice coefficient in the coregistration to T1W
   echo "Realign each PET frame to reference image"
-  for t in ${pet}_f*.nii
-  do 
-    flirt -dof 6 -in $t -ref ${petref} -cost normmi -searchcost normmi -out ${t%.nii}_r
-    mri_synthstrip -i ${t%.nii}_r.nii -m ${t%.nii}_r_stripmask.nii
-    tmp_dice_value=$(calc_dice ${t1w}_r_stripmask.nii.gz ${t%.nii}_r_stripmask.nii)
+  #for t in ${pet}_f*.nii
+  #do 
+    #flirt -dof 6 -in $t -ref ${petref} -cost normmi -searchcost normmi -out ${t%.nii}_r
+    #mri_synthstrip -i ${t%.nii}_r.nii -m ${t%.nii}_r_stripmask.nii
+    #tmp_dice_value=$(calc_dice ${t1w}_r_stripmask.nii.gz ${t%.nii}_r_stripmask.nii)
 
-    if [[ -z "$min_dice_value" ]] || [[ $min_dice_value > $tmp_dice_value ]]; then
-      min_dice_value=$tmp_dice_value
-      min_dice_frame=$t
-    fi
-  done
+    #if [[ -z "$min_dice_value" ]] || [[ $min_dice_value > $tmp_dice_value ]]; then
+    #  min_dice_value=$tmp_dice_value
+    #  min_dice_frame=$t
+    #fi
+  #done
 
   ## PET frames are realigned, averaged, and coregistered to T1W
-  '''
   for t in ${pet}_f*.nii
   do 
-    if [[ $t == $min_dice_frame ]]; then
-      cp $t ${t%.nii}_r.nii
-      continue
-    fi
-
-    flirt -dof 6 -in $t -ref ${min_dice_frame} -cost normmi -searchcost normmi -omat ${t%.nii}_align.mat -out ${t%.nii}_r
-
+    flirt -dof 6 -in $t -ref ${petref} -cost normmi -searchcost normmi -omat ${t%.nii}_align.mat -out ${t%.nii}_align
   done
-  '''
-  
+    
   # Merge realigned frames
   echo "Merge realigned frames"
-  fslmerge -t ${pet}_r tmp*r.nii
+  fslmerge -t ${pet}_align ${pet}_f*_align.nii
 
   # Calculate mean of realigned PET images and
   # divide the image by voxel size to produce kbq/cc image
@@ -163,10 +152,12 @@ COMMENTOUT
   voxsize=$(echo "$pixdim1 * $pixdim2 * $pixdim3 * 1000" | bc)
   
   echo "Calculate mean of realigned PET images"
-  fslmaths ${pet}_r -Tmean -div $voxsize ${pet%_cor}_mean
+  fslmaths ${pet}_align -Tmean -div $voxsize ${pet%_cor}_align_mean
+
+  flirt -dof 6 -in ${pet%_cor}_align_mean -ref ${t1w}_r -cost normmi -searchcost normmi -omat ${t1w%_t1w}_PET2T1W.mat -out ${pet%_cor}_mean
   
   # Delete temporary files
-  rm -f ${t1w}_o.nii tmp*.nii ${pad}.nii
+  rm -f ${t1w}_o.nii
 
   echo "Please check the registration of ${t1w}_r and ${pet%_cor}_mean"
 
