@@ -34,6 +34,20 @@ FSLOUTPUTTYPE=NIFTI
 THAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
 source ${THAMEQDIR}/config.env
 
+# Create a basis for coregistration QC
+QCT1W=./coregistration_results_t1w.csv
+echo "ID,Dice,Dx,Dy,Dz,Rx,Ry,Rz" > ${QCT1W}
+
+QCPET=./coregistration_results_pet.csv
+echo "ID,Rmax1,Rmax2,Rmax3,Rmax4,Rmax,Dice" > ${QCPET}
+
+# Define util function
+function calc_dice() {
+  overlap=$(fslstats $1 -k $2 -V | awk -F ' ' '{print $1}')
+  union=$(echo "$(fslstats $1 -V | awk -F ' ' '{print $1}') + $(fslstats $2 -V | awk -F ' ' '{print $1}')" | bc)
+  echo $(scale=3;$overlap*2/$union) | bc
+}
+
 for f in [A-Z]*_pmpbb3_dyn.nii*
 do
   pet=$(imglob $f) # PET filename
@@ -70,7 +84,20 @@ do
   bet ${t1w}_o ${t1w}_brain -R -B -f 0.20 # Brain Extraction
   flirt -dof 6 -in ${t1w}_brain -ref ${pad} -omat ${t1w}2MNI.mat # Conversion matrix from native space to MNI
   flirt -in ${t1w}_o -ref ${pad} -applyxfm -init ${t1w}2MNI.mat -out ${t1w}_r # Realign T1 image to MNI template
-   
+  
+  # Evaluation for T1 x MNI coregistratioin
+  mri_synthstrip -i ${t1w}_r.nii -m ${t1w}_r_stripmask.nii.gz
+  mri_synthstrip -i ${pad}.nii -m ${t1w%_t1w}_mnipad_stripmask.nii.gz
+  DICE_T1W=$(calc_dice ${t1w}_r_stripmask.nii.gz ${t1w%_t1w}_mnipad_stripmask.nii.gz)
+  Dx_T1W=$(avscale --allparams ${t1w}2MNI.mat | grep 'Translations' | awk -F ' ' '{print $5}')
+  Dy_T1W=$(avscale --allparams ${t1w}2MNI.mat | grep 'Translations' | awk -F ' ' '{print $6}')
+  Dz_T1W=$(avscale --allparams ${t1w}2MNI.mat | grep 'Translations' | awk -F ' ' '{print $7}')
+  Rx_T1W=$(avscale --allparams ${t1w}2MNI.mat | grep 'Rotation Angles' | awk -F ' ' '{print $6}')
+  Ry_T1W=$(avscale --allparams ${t1w}2MNI.mat | grep 'Rotation Angles' | awk -F ' ' '{print $7}')
+  Rz_T1W=$(avscale --allparams ${t1w}2MNI.mat | grep 'Rotation Angles' | awk -F ' ' '{print $8}')
+  
+  echo "${t1w%_t1w},$DICE_T1W,$Dx_T1W,$Dy_T1W,$Dz_T1W,$Rx_T1W,$Ry_T1W,$Rz_T1W" >> ${QCT1W}
+
   # Define the reference image of PET
   petref=${t1w}_r
   ###############################
@@ -92,16 +119,37 @@ COMMENTOUT
 
   ###############################
 
-  ## Split PET frames as tmp????.nii
+  ## Split PET frames as ${pet}_f????.nii
   echo "Split PET frames"
-  fslsplit ${pet} tmp
+  fslsplit ${pet} ${pet}_f
   
-  ## Realign each PET frame to T1 image
+  ## Which PET frame shows the highest Dice coefficient in the coregistration to T1W
   echo "Realign each PET frame to reference image"
-  for t in tmp*.nii
+  for t in ${pet}_f*.nii
   do 
-    flirt -dof 6 -in $t -ref ${petref} -out ${t%.nii}_r
+    flirt -dof 6 -in $t -ref ${petref} -cost normmi -searchcost normmi -out ${t%.nii}_r
+    mri_synthstrip -i ${t%.nii}_r.nii -m ${t%.nii}_r_stripmask.nii
+    tmp_dice_value=$(calc_dice ${t1w}_r_stripmask.nii.gz ${t%.nii}_r_stripmask.nii)
+
+    if [[ -z "$min_dice_value" ]] || [[ $min_dice_value > $tmp_dice_value ]]; then
+      min_dice_value=$tmp_dice_value
+      min_dice_frame=$t
+    fi
   done
+
+  ## PET frames are realigned, averaged, and coregistered to T1W
+  '''
+  for t in ${pet}_f*.nii
+  do 
+    if [[ $t == $min_dice_frame ]]; then
+      cp $t ${t%.nii}_r.nii
+      continue
+    fi
+
+    flirt -dof 6 -in $t -ref ${min_dice_frame} -cost normmi -searchcost normmi -omat ${t%.nii}_align.mat -out ${t%.nii}_r
+
+  done
+  '''
   
   # Merge realigned frames
   echo "Merge realigned frames"
