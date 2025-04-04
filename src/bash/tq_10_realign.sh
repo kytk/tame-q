@@ -45,7 +45,7 @@ echo "ID,Rmax1,Rmax2,Rmax3,Rmax4,Rmax,Dice" > ${QCPET}
 function calc_dice() {
   overlap=$(fslstats $1 -k $2 -V | awk -F ' ' '{print $1}')
   union=$(echo "$(fslstats $1 -V | awk -F ' ' '{print $1}') + $(fslstats $2 -V | awk -F ' ' '{print $1}')" | bc)
-  echo $(scale=3;$overlap*2/$union) | bc
+  echo "scale=3;$overlap*2/$union" | bc
 }
 
 for f in [A-Z]*_pmpbb3_dyn.nii*
@@ -109,9 +109,9 @@ do
   # Calculate a mean image from first two images of PET
   echo "Calculate a mean image of PET"
   fslroi ${pet} ${pet}_two 0 2 
-  fslmaths ${pet}_two -Tmean ${pet}_m
+  fslmaths ${pet}_two -Tmean ${pet}_ref
   
-  petref=${pet}_m
+  petref=${pet}_ref
 #COMMENTOUT
 
   ###############################
@@ -146,18 +146,29 @@ do
 
   # Calculate mean of realigned PET images and
   # divide the image by voxel size to produce kbq/cc image
-  pixdim1=$(fslval ${pet}_r pixdim1)
-  pixdim2=$(fslval ${pet}_r pixdim2)
-  pixdim3=$(fslval ${pet}_r pixdim3)
-  voxsize=$(echo "$pixdim1 * $pixdim2 * $pixdim3 * 1000" | bc)
+  pixdim1=$(fslval ${pet}_align pixdim1)
+  pixdim2=$(fslval ${pet}_align pixdim2)
+  pixdim3=$(fslval ${pet}_align pixdim3)
+  voxsize=$(echo "scale=3;$pixdim1 * $pixdim2 * $pixdim3 * 1000" | bc)
   
   echo "Calculate mean of realigned PET images"
   fslmaths ${pet}_align -Tmean -div $voxsize ${pet%_cor}_align_mean
 
   flirt -dof 6 -in ${pet%_cor}_align_mean -ref ${t1w}_r -cost normmi -searchcost normmi -omat ${t1w%_t1w}_PET2T1W.mat -out ${pet%_cor}_mean
   
+  mri_synthstrip -i ${pet%_cor}_mean.nii -m ${pet%_cor}_mean_stripmask.nii.gz
+  DICE_PET=$(calc_dice ${t1w}_r_stripmask.nii.gz ${pet%_cor}_mean_stripmask.nii.gz)
+  Dx_PET=$(avscale --allparams ${t1w%_t1w}_PET2T1W.mat | grep 'Translations' | awk -F ' ' '{print $5}')
+  Dy_PET=$(avscale --allparams ${t1w%_t1w}_PET2T1W.mat | grep 'Translations' | awk -F ' ' '{print $6}')
+  Dz_PET=$(avscale --allparams ${t1w%_t1w}_PET2T1W.mat | grep 'Translations' | awk -F ' ' '{print $7}')
+  Rx_PET=$(avscale --allparams ${t1w%_t1w}_PET2T1W.mat | grep 'Rotation Angles' | awk -F ' ' '{print $6}')
+  Ry_PET=$(avscale --allparams ${t1w%_t1w}_PET2T1W.mat | grep 'Rotation Angles' | awk -F ' ' '{print $7}')
+  Rz_PET=$(avscale --allparams ${t1w%_t1w}_PET2T1W.mat | grep 'Rotation Angles' | awk -F ' ' '{print $8}')
+
+  echo "${t1w%_t1w},$DICE_PET,$Dx_PET,$Dy_PET,$Dz_PET,$Rx_PET,$Ry_PET,$Rz_PET" >> ${QCPET}
+
   # Delete temporary files
-  rm -f ${t1w}_o.nii
+  #rm -f ${t1w}_o.nii
 
   echo "Please check the registration of ${t1w}_r and ${pet%_cor}_mean"
 
