@@ -81,7 +81,8 @@ do
   
   # Rigid body transform of T1 to MNI
   echo "Rigid body transform of ${t1w} to MNI"
-  bet ${t1w}_o ${t1w}_brain -R -B -f 0.20 # Brain Extraction
+  #bet ${t1w}_o ${t1w}_brain -R -B -f 0.20 # Brain Extraction
+  mri_synthstrip -i ${t1w}_o -o ${t1w}_brain -m ${t1w}_brain_mask
   flirt -dof 6 -in ${t1w}_brain -ref ${pad} -omat ${t1w}2MNI.mat # Conversion matrix from native space to MNI
   flirt -in ${t1w}_o -ref ${pad} -applyxfm -init ${t1w}2MNI.mat -out ${t1w}_r # Realign T1 image to MNI template
   
