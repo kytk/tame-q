@@ -149,9 +149,9 @@ do
 
   # Calculate mean of realigned PET images and
   # divide the image by voxel size to produce kbq/cc image
-  pixdim1=$(fslval ${pet}_align pixdim1)
-  pixdim2=$(fslval ${pet}_align pixdim2)
-  pixdim3=$(fslval ${pet}_align pixdim3)
+  pixdim1=$(fslval ${pet%_cor}_mean pixdim1)
+  pixdim2=$(fslval ${pet%_cor}_mean pixdim2)
+  pixdim3=$(fslval ${pet%_cor}_mean pixdim3)
   voxsize=$(echo "scale=3;$pixdim1 * $pixdim2 * $pixdim3" | bc)
   fslmaths ${pet%_cor}_mean -div $voxsize -div 1000 ${pet%_cor}_mean
   
