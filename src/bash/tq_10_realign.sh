@@ -39,7 +39,7 @@ QCT1W=./coregistration_results_t1w.csv
 echo "ID,Dice,Dx,Dy,Dz,Rx,Ry,Rz" > ${QCT1W}
 
 QCPET=./coregistration_results_pet.csv
-echo "ID,Rmax1,Rmax2,Rmax3,Rmax4,Rmax,Dice" > ${QCPET}
+echo "ID,Dice,Rmax1,Rmax2,Rmax3,Rmax4,Rmax" > ${QCPET}
 
 # Define util function
 function calc_dice() {
@@ -82,7 +82,7 @@ do
   # Rigid body transform of T1 to MNI
   echo "Rigid body transform of ${t1w} to MNI"
   #bet ${t1w}_o ${t1w}_brain -R -B -f 0.20 # Brain Extraction
-  mri_synthstrip -i ${t1w}_o -o ${t1w}_brain -m ${t1w}_brain_mask
+  mri_synthstrip -i ${t1w}_o.nii -o ${t1w}_brain.nii -m ${t1w}_brain_mask.nii
   flirt -dof 6 -in ${t1w}_brain -ref ${pad} -omat ${t1w}2MNI.mat # Conversion matrix from native space to MNI
   flirt -in ${t1w}_o -ref ${pad} -applyxfm -init ${t1w}2MNI.mat -out ${t1w}_r # Realign T1 image to MNI template
   
@@ -141,21 +141,19 @@ do
     flirt -dof 6 -in $t -ref ${petref} -cost normmi -searchcost normmi -omat ${t%.nii}_align.mat -out ${t%.nii}_align
   done
     
-  # Merge realigned frames
+  # Merge realigned frames and mean them
   echo "Merge realigned frames"
   fslmerge -t ${pet}_align ${pet}_f*_align.nii
+  fslmaths ${pet}_align -Tmean ${pet}_align_mean
+  flirt -dof 6 -in ${pet}_align_mean -ref ${t1w}_r -cost normmi -searchcost normmi -omat ${t1w%_t1w}_PET2T1W.mat -out ${pet%_cor}_mean
 
   # Calculate mean of realigned PET images and
   # divide the image by voxel size to produce kbq/cc image
   pixdim1=$(fslval ${pet}_align pixdim1)
   pixdim2=$(fslval ${pet}_align pixdim2)
   pixdim3=$(fslval ${pet}_align pixdim3)
-  voxsize=$(echo "scale=3;$pixdim1 * $pixdim2 * $pixdim3 * 1000" | bc)
-  
-  echo "Calculate mean of realigned PET images"
-  fslmaths ${pet}_align -Tmean -div $voxsize ${pet%_cor}_align_mean
-
-  flirt -dof 6 -in ${pet%_cor}_align_mean -ref ${t1w}_r -cost normmi -searchcost normmi -omat ${t1w%_t1w}_PET2T1W.mat -out ${pet%_cor}_mean
+  voxsize=$(echo "scale=3;$pixdim1 * $pixdim2 * $pixdim3" | bc)
+  fslmaths ${pet%_cor}_mean -div $voxsize -div 1000 ${pet%_cor}_mean
   
   mri_synthstrip -i ${pet%_cor}_mean.nii -m ${pet%_cor}_mean_stripmask.nii.gz
   DICE_PET=$(calc_dice ${t1w}_r_stripmask.nii.gz ${pet%_cor}_mean_stripmask.nii.gz)
