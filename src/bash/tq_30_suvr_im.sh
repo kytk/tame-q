@@ -75,7 +75,7 @@ do
   
   # obtain reference value
   MEAN=$(fslstats ${f} -k ${msk_eroded} -M)
-  if [[ $MEAN < 4 ]] ; then
+  if [[ $MEAN < 4 ]]&&[[ $MEAN > 1 ]] ; then
     refval=$(python ${THAMEQDIR}/src/python/get_ref.py ${id} ${f} ${msk_eroded}.nii.gz ${output_directory})
     fslmaths ${f} -div ${refval} ${id}_pmpbb3_suvr
   else
