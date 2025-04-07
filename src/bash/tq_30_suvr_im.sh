@@ -44,7 +44,7 @@ if [[ ! -e ${PWD}/${output_directory}/histogram_parameters.txt ]]; then
   echo -e "ID\tprobability map\tvoxel num\ta1\tb1\tc1\ta2\tb2\tc2\tFWHM_min\tFWHM_max\trefnum\trefval" > ${PWD}/${output_directory}/histogram_parameters.txt
 fi
 
-for f in *_pmpbb3_dyn_mean.nii*
+for f in [A-Z]*_pmpbb3_dyn_mean.nii*
 do
   id=${f%.gz}
   id=${id%_pmpbb3_dyn_mean.nii}
