@@ -65,8 +65,8 @@ do
   #merge wmparc and bsseg (Brain-Stem (wmparc) segmented into Midbrain, Pons, and Brainstem (segmentBS))
   fslmaths ${f} -thr 16 -uthr 16 ${f/wmparc/wmparc_brainstem}  # Extract brainstem (wmparc)
   fslmaths ${f_merged} -sub ${f/wmparc/wmparc_brainstem} ${f_merged/merged/merged_wobrainstem}  # Remove brainstem from output temporally
-  fslmaths ${f/wmparc/bsseg} -uthr 176 -mas ${f/wmparc/wmparc_brainstem} ${f/wmparc/bsseg_in_wmparc}  # Define the segmentation only in wmparc Brain-Stem region
-  fslmaths ${f_merged/merged/merged_wobrainstem} -add ${f/wmparc/bsseg_in_wmparc} ${f_merged}  # Add brainstem segmentation into output merged atlas
+  fslmaths ${f/wmparc/bsseg} -uthr 176 -mas ${f/wmparc/wmparc_brainstem} ${f/wmparc/bsseg_inwmparc}  # Define the segmentation only in wmparc Brain-Stem region
+  fslmaths ${f_merged/merged/merged_wobrainstem} -add ${f/wmparc/bsseg_inwmparc} ${f_merged}  # Add brainstem segmentation into output merged atlas
 
   echo "Save ${f_merged}"
   
