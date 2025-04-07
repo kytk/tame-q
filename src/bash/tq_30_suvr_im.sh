@@ -52,7 +52,7 @@ do
   t1w_r=${id}_t1w_r
   t1w_brain_mask=${id}_t1w_brain_mask
 
-  msk=c1${id}_t1w_r_q
+  msk=c1${id}_t1w_r
   msk_masked=${msk}_masked
   msk_thr=c1${id}_t1w_r_thr
   msk_thr_xero=c1${id}_t1w_r_thr_xero
