@@ -36,10 +36,10 @@ source ${THAMEQDIR}/config.env
 
 # Create a basis for coregistration QC
 QCT1W=./coregistration_results_t1w.csv
-echo "ID,Dice,Dx,Dy,Dz,Rx,Ry,Rz" > ${QCT1W}
+echo "ID,Rx,Ry,Rz,Dice" > ${QCT1W}
 
 QCPET=./coregistration_results_pet.csv
-echo "ID,Dice,Rmax1,Rmax2,Rmax3,Rmax4,Rmax" > ${QCPET}
+echo "ID,Rmax_frame,Rx_mean,Ry_mean,Rz_mean,Dice" > ${QCPET}
 
 # Define util function
 function calc_dice() {
@@ -85,19 +85,13 @@ do
   mri_synthstrip -i ${t1w}_o.nii -o ${t1w}_brain.nii -m ${t1w}_brain_mask.nii
   flirt -dof 6 -in ${t1w}_brain -ref ${pad} -omat ${t1w}2MNI.mat # Conversion matrix from native space to MNI
   flirt -in ${t1w}_o -ref ${pad} -applyxfm -init ${t1w}2MNI.mat -out ${t1w}_r # Realign T1 image to MNI template
+  flirt -in ${t1w}_brain_mask.nii -ref ${pad} -interp nearestneighbour -applyxfm -init ${t1w}2MNI.mat -out ${t1w}_brain_mask_r.nii
   
   # Evaluation for T1 x MNI coregistratioin
-  mri_synthstrip -i ${t1w}_r.nii -m ${t1w}_r_stripmask.nii.gz
   mri_synthstrip -i ${pad}.nii -m ${t1w%_t1w}_mnipad_stripmask.nii.gz
-  DICE_T1W=$(calc_dice ${t1w}_r_stripmask.nii.gz ${t1w%_t1w}_mnipad_stripmask.nii.gz)
-  Dx_T1W=$(avscale --allparams ${t1w}2MNI.mat | grep 'Translations' | awk -F ' ' '{print $5}')
-  Dy_T1W=$(avscale --allparams ${t1w}2MNI.mat | grep 'Translations' | awk -F ' ' '{print $6}')
-  Dz_T1W=$(avscale --allparams ${t1w}2MNI.mat | grep 'Translations' | awk -F ' ' '{print $7}')
-  Rx_T1W=$(avscale --allparams ${t1w}2MNI.mat | grep 'Rotation Angles' | awk -F ' ' '{print $6}')
-  Ry_T1W=$(avscale --allparams ${t1w}2MNI.mat | grep 'Rotation Angles' | awk -F ' ' '{print $7}')
-  Rz_T1W=$(avscale --allparams ${t1w}2MNI.mat | grep 'Rotation Angles' | awk -F ' ' '{print $8}')
-  
-  echo "${t1w%_t1w},$DICE_T1W,$Dx_T1W,$Dy_T1W,$Dz_T1W,$Rx_T1W,$Ry_T1W,$Rz_T1W" >> ${QCT1W}
+  DICE_T1W=$(calc_dice ${t1w}_brain_mask_r.nii ${t1w%_t1w}_mnipad_stripmask.nii.gz)
+  R_T1W=$(avscale --allparams ${t1w}2MNI.mat | grep 'Rotation Angles' | awk -F '= ' '{print $2}' | sed 's/ /,/g')
+  echo "${t1w%_t1w},${R_T1W%,},$DICE_T1W" >> ${QCT1W}
 
   # Define the reference image of PET
   #petref=${t1w}_r
@@ -139,8 +133,10 @@ do
   for t in ${pet}_f*.nii
   do 
     flirt -dof 6 -in $t -ref ${petref} -cost normmi -searchcost normmi -omat ${t%.nii}_align.mat -out ${t%.nii}_align
+    Rf="${Rf} $(avscale --allparams ${t%.nii}_align.mat | grep 'Rotation Angles' | awk -F '= ' '{print $2}')"
   done
-    
+  Rmaxf=$(for v in $Rf; do echo $v; done | sort -nr | head -n1)
+
   # Merge realigned frames and mean them
   echo "Merge realigned frames"
   fslmerge -t ${pet}_align ${pet}_f*_align.nii
@@ -156,15 +152,10 @@ do
   fslmaths ${pet%_cor}_mean -div $voxsize -div 1000 ${pet%_cor}_mean
   
   mri_synthstrip -i ${pet%_cor}_mean.nii -m ${pet%_cor}_mean_stripmask.nii.gz
-  DICE_PET=$(calc_dice ${t1w}_r_stripmask.nii.gz ${pet%_cor}_mean_stripmask.nii.gz)
-  Dx_PET=$(avscale --allparams ${t1w%_t1w}_PET2T1W.mat | grep 'Translations' | awk -F ' ' '{print $5}')
-  Dy_PET=$(avscale --allparams ${t1w%_t1w}_PET2T1W.mat | grep 'Translations' | awk -F ' ' '{print $6}')
-  Dz_PET=$(avscale --allparams ${t1w%_t1w}_PET2T1W.mat | grep 'Translations' | awk -F ' ' '{print $7}')
-  Rx_PET=$(avscale --allparams ${t1w%_t1w}_PET2T1W.mat | grep 'Rotation Angles' | awk -F ' ' '{print $6}')
-  Ry_PET=$(avscale --allparams ${t1w%_t1w}_PET2T1W.mat | grep 'Rotation Angles' | awk -F ' ' '{print $7}')
-  Rz_PET=$(avscale --allparams ${t1w%_t1w}_PET2T1W.mat | grep 'Rotation Angles' | awk -F ' ' '{print $8}')
+  DICE_PET=$(calc_dice ${t1w}_brain_mask_r.nii ${pet%_cor}_mean_stripmask.nii.gz)
+  R_PET=$(avscale --allparams ${t1w%_t1w}_PET2T1W.mat | grep 'Rotation Angles' | awk -F '= ' '{print $2}' | sed 's/ /,/g')
 
-  echo "${t1w%_t1w},$DICE_PET,$Dx_PET,$Dy_PET,$Dz_PET,$Rx_PET,$Ry_PET,$Rz_PET" >> ${QCPET}
+  echo "${t1w%_t1w},$Rmaxf,${R_PET%,},$DICE_PET" >> ${QCPET}
 
   # Delete temporary files
   #rm -f ${t1w}_o.nii

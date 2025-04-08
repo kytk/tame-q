@@ -62,7 +62,7 @@ do
   echo "Processing ${id} images."
   
   #bet ${t1w} ${t1w_brain} -R -B -f 0.40
-  flirt -dof 6 -in ${t1w_brain_mask} -ref ${t1w_r} -applyxfm -init ${id}_t1w2MNI.mat -out ${t1w_brain_mask}_r
+  #flirt -dof 6 -in ${t1w_brain_mask} -ref ${t1w_r} -applyxfm -init ${id}_t1w2MNI.mat -out ${t1w_brain_mask}_r
   
   #fslmaths ${msk} -mas ${t1w_brain_mask}_r ${msk_masked}
   #fslmaths ${msk_masked} -thr 0.9 ${msk_thr}
