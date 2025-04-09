@@ -84,8 +84,8 @@ do
   #bet ${t1w}_o ${t1w}_brain -R -B -f 0.20 # Brain Extraction
   mri_synthstrip -i ${t1w}_o.nii -o ${t1w}_brain.nii -m ${t1w}_brain_mask.nii
   flirt -dof 6 -in ${t1w}_brain -ref ${pad} -omat ${t1w}2MNI.mat # Conversion matrix from native space to MNI
-  flirt -in ${t1w}_o -ref ${pad} -applyxfm -init ${t1w}2MNI.mat -out ${t1w}_r # Realign T1 image to MNI template
-  flirt -in ${t1w}_brain_mask.nii -ref ${pad} -interp nearestneighbour -applyxfm -init ${t1w}2MNI.mat -out ${t1w}_brain_mask_r.nii
+  flirt -dof 6 -in ${t1w}_o -ref ${pad} -applyxfm -init ${t1w}2MNI.mat -out ${t1w}_r # Realign T1 image to MNI template
+  flirt -dof 6 -in ${t1w}_brain_mask.nii -ref ${pad} -interp nearestneighbour -applyxfm -init ${t1w}2MNI.mat -out ${t1w}_brain_mask_r.nii
   
   # Evaluation for T1 x MNI coregistratioin
   mri_synthstrip -i ${pad}.nii -m ${t1w%_t1w}_mnipad_stripmask.nii.gz
