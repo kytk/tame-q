@@ -157,6 +157,8 @@ do
 
   echo "${t1w%_t1w},$Rmaxf,${R_PET%,},$DICE_PET" >> ${QCPET}
 
+  ${THAMEQDIR}/src/python/qa_view.py ${t1w%_t1w} ${t1w}_r.nii ${pet%_cor}_mean.nii ${pet%_cor}_align.nii ${petref}.nii ${t1w%_t1w}_qareport.png
+
   # Delete temporary files
   #rm -f ${t1w}_o.nii
 
