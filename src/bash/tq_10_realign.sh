@@ -158,8 +158,12 @@ do
   echo "${t1w%_t1w},$Rmaxf,${R_PET%,},$DICE_PET" >> ${QCPET}
 
   # Create QA Report
-  fslmaths ${pet%_cor}_mean_stripmask.nii.gz -ero tmpmask
-  fslmaths ${pet%_cor}_mean_stripmask.nii.gz -mas tmpmask ${pet%_cor}_mean_outline
+  fslmaths ${pet%_cor}_mean_stripmask -ero tmpmask
+  fslmaths ${pet%_cor}_mean_stripmask -sub tmpmask ${pet%_cor}_mean_outline
+
+  mri_synthstrip -i ${petref}.nii -m ${petref}_stripmask.nii.gz
+  fslmaths ${petref}_stripmask -ero tmpmask
+  fslmaths ${petref}_stripmask -sub tmpmask ${petref}_outline
   rm tmpmask.nii
 
   ${THAMEQDIR}/src/python/qa_view.py ${t1w%_t1w} ${t1w}_r.nii ${pet%_cor}_mean.nii ${pet%_cor}_align.nii ${petref}.nii

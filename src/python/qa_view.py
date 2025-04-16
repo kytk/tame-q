@@ -72,7 +72,7 @@ def get_mat_t1w_pet(img_t1w, img_pet, img_pet_outline):
     mat_t1w[:, mat_t1w.shape[1]*4//5:mat_t1w.shape[1]*4//5+2]=mat_t1w.max()
     return mat_t1w, mat_pet, mat_pet_outline
 
-def get_mat_ref(img_ref, l):
+def get_mat_ref(img_ref, img_ref_outline, l):
     idx4=img_ref.shape[0]//4
     idx3=img_ref.shape[0]//3
     idx2=img_ref.shape[0]//2
@@ -82,40 +82,35 @@ def get_mat_ref(img_ref, l):
     mat_ref_4=adjust_size_pixdim(img_ref[-idx3, ::-1, ::-1].transpose(1, 0), [l[2], l[1]])
     mat_ref_5=adjust_size_pixdim(img_ref[-idx4, ::-1, ::-1].transpose(1, 0), [l[2], l[1]])
     mat_ref=np.c_[mat_ref_1, mat_ref_2, mat_ref_3, mat_ref_4, mat_ref_5]
+
+    mat_ref_outline_1=adjust_size_pixdim(img_ref_outline[idx4, ::-1, ::-1].transpose(1, 0), [l[2], l[1]])
+    mat_ref_outline_2=adjust_size_pixdim(img_ref_outline[idx3, ::-1, ::-1].transpose(1, 0), [l[2], l[1]])
+    mat_ref_outline_3=adjust_size_pixdim(img_ref_outline[idx2, ::-1, ::-1].transpose(1, 0), [l[2], l[1]])
+    mat_ref_outline_4=adjust_size_pixdim(img_ref_outline[-idx3, ::-1, ::-1].transpose(1, 0), [l[2], l[1]])
+    mat_ref_outline_5=adjust_size_pixdim(img_ref_outline[-idx4, ::-1, ::-1].transpose(1, 0), [l[2], l[1]])
+    mat_ref_outline=np.c_[mat_ref_outline_1, mat_ref_outline_2, mat_ref_outline_3, mat_ref_outline_4, mat_ref_outline_5]
     idxes=[idx4, idx3, idx2, -idx3, -idx4]
-    return mat_ref, idxes
+    return mat_ref, mat_ref_outline, idxes
 
-def get_qareport_process0(mat_t1w, mat_ref):
+def get_qareport_process1(mat_t1w, mat_pet, mat_ref, mode='Mode1'):
     fig=plt.figure(figsize=(8.27, 11.69), dpi=300, facecolor='white')
-    fig.text(0.5, 0.93, "QA Report: Realignment and Coregistration", size=20, ha='center', weight='bold')
-    fig.text(0.08, 0.9, ID, size=14)
+    if mode=='Mode1':
+        figtitle="QA Report (Overlay): Realignment and Coregistration"
+        text1='Averaged PET\non T1W'
+    if mode=='Mode2':
+        figtitle="QA Report (Outline): Realignment and Coregistration"
+        text1='T1W and\nPET Outline'
+
+    fig.text(0.5, 0.93, figtitle, size=18, ha='center', weight='bold')
+    fig.text(0.5, 0.9, ID, size=14, ha='center', va='center')
 
     ax1=fig.add_axes((0.15, 0.75, 0.82, 0.14))
-    fig.text(0.075, 0.82, 'Averaged PET\non T1W', ha='center', va='center')
+    fig.text(0.075, 0.82, text1, ha='center', va='center')
     ax1.imshow(mat_t1w, cmap='gray')
-    msk=ax1.imshow(mat_pet, cmap='jet', alpha=0.4).set_clim(0.1, mat_pet.max())
-    ax1.axes.xaxis.set_visible(False)
-    ax1.axes.yaxis.set_visible(False)
-    
-    ax2=fig.add_axes((0.15, 0.61, 0.82, 0.14))
-    fig.text(0.075, 0.68, 'Target image\nfor alignment', ha='center', va='center')
-    ax2.imshow(mat_ref, cmap='gray', aspect=l[2]/l[1]).set_clim(np.percentile(mat_ref, 1), np.percentile(mat_ref, 99))
-    ax2.axes.xaxis.set_visible(False)
-    ax2.axes.yaxis.set_visible(False)
-    return fig
-
-def get_qareport_process1(mat_t1w, mat_pet, mat_ref, mode='pet'):
-    fig=plt.figure(figsize=(8.27, 11.69), dpi=300, facecolor='white')
-    fig.text(0.5, 0.93, "QA Report: Realignment and Coregistration", size=20, ha='center', weight='bold')
-    fig.text(0.08, 0.9, ID, size=14)
-
-    ax1=fig.add_axes((0.15, 0.75, 0.82, 0.14))
-    fig.text(0.075, 0.82, 'Averaged PET\non T1W', ha='center', va='center')
-    ax1.imshow(mat_t1w, cmap='gray')
-    if mode=='pet':
+    if mode=='Mode1':
         msk=ax1.imshow(mat_pet, cmap='jet', alpha=0.4).set_clim(0.1, mat_pet.max())
     
-    if mode=='outline':
+    if mode=='Mode2':
         outline=np.zeros((mat_pet.shape[0], mat_pet.shape[1], 4))
         outline[:, :, 0]=1.0
         outline[:, :, 3]=mat_pet
@@ -141,16 +136,27 @@ def get_mat_dyn_multiple(img_dyn, idxes, l, start_num):
     mat_dyn_multiple=[get_mat_dyn(img_dyn, idxes, l, i) for i in range(start_num, start_num+4) if i<img_dyn.shape[3]]
     return mat_dyn_multiple
 
-def get_qareport_process2(fig, mat_ref, mat_dyn_multiple, l, start_num, N_frame):
+def get_qareport_process2(fig, mat_ref, mat_dyn_multiple, l, start_num, N_frame, mode='Mode1'):
     axs=[]
     for i, mat_dyn in enumerate(mat_dyn_multiple):
         axs.append(fig.add_axes((0.15, 0.47-0.14*i, 0.82, 0.14)))
         fig.text(0.075, 0.54-0.14*i, f'Frame\n{start_num+i+1} / {N_frame}', ha='center', va='center')
-        axs[i].imshow(mat_ref, cmap='gray', aspect=l[2]/l[1]).set_clim(np.percentile(mat_ref, 1), np.percentile(mat_ref, 99))
-        axs[i].imshow(mat_dyn, cmap='jet', aspect=l[2]/l[1], alpha=0.4).set_clim(0, mat_ref.max())
+        if mode=='Mode1':
+            axs[i].imshow(mat_ref, cmap='gray', aspect=l[2]/l[1]).set_clim(np.percentile(mat_ref, 1), np.percentile(mat_ref, 99))
+            axs[i].imshow(mat_dyn, cmap='jet', aspect=l[2]/l[1], alpha=0.4).set_clim(0, mat_ref.max())
+            footer='Each PET frame is overlaid on the target image.'
+        if mode=='Mode2':
+            axs[i].imshow(mat_dyn, cmap='gray', aspect=l[2]/l[1]).set_clim(np.percentile(mat_dyn, 1), np.percentile(mat_dyn, 99))
+            matrix_outline=np.zeros((mat_ref.shape[0], mat_ref.shape[1], 4))
+            matrix_outline[:, :, 0]=1.0
+            matrix_outline[:, :, 3]=mat_ref
+            axs[i].imshow(matrix_outline, aspect=l[2]/l[1])
+            footer='The target image outline is overlaid on each frame.'
 
         axs[i].axes.xaxis.set_visible(False)
         axs[i].axes.yaxis.set_visible(False)
+
+    fig.text(0.15, 0.04, footer)
         
     return fig
 
@@ -163,9 +169,10 @@ pet_ref=sys.argv[5]
 # Load Data
 img_t1w=nib.load(t1w).get_fdata()
 img_pet=nib.load(pet_mean).get_fdata()
+img_pet_outline=nib.load(ID+'_pmpbb3_dyn_mean_outline.nii').get_fdata()
 img_dyn=np.pad(nib.load(pet_dyn).get_fdata(), pad_width=((1, 1), (1, 1), (1, 1), (0, 0)), mode='constant')
 img_ref=np.pad(nib.load(pet_ref).get_fdata(), pad_width=((1, 1), (1, 1), (1, 1)), mode='constant')
-img_pet_outline=nib.load(ID+'_pmpbb3_dyn_mean_outline.nii').get_fdata()
+img_ref_outline=np.pad(nib.load(ID+'_pmpbb3_dyn_ref_outline.nii').get_fdata(), pad_width=((1, 1), (1, 1), (1, 1)), mode='constant')
 
 # Determine FOV
 head_pet=nib.load(pet_mean).header
@@ -186,16 +193,20 @@ Gz=np.average(np.arange(zaxis_sum.size), weights=zaxis_sum)
 img_ref=img_ref[max(int(Gx-size[0]/2), 0):min(int(Gx+size[0]/2), int(img_ref.shape[0]-1)),
                 max(int(Gy-size[1]/2), 0):min(int(Gy+size[1]/2), int(img_ref.shape[1]-1)),
                 max(int(Gz-size[2]/2), 0):min(int(Gz+size[2]/2), int(img_ref.shape[2]-1))]
+img_ref_outline=img_ref_outline[max(int(Gx-size[0]/2), 0):min(int(Gx+size[0]/2), int(img_ref_outline.shape[0]-1)),
+                max(int(Gy-size[1]/2), 0):min(int(Gy+size[1]/2), int(img_ref_outline.shape[1]-1)),
+                max(int(Gz-size[2]/2), 0):min(int(Gz+size[2]/2), int(img_ref_outline.shape[2]-1))]
 img_dyn=img_dyn[max(int(Gx-size[0]/2), 0):min(int(Gx+size[0]/2), int(img_dyn.shape[0]-1)),
                 max(int(Gy-size[1]/2), 0):min(int(Gy+size[1]/2), int(img_dyn.shape[1]-1)),
                 max(int(Gz-size[2]/2), 0):min(int(Gz+size[2]/2), int(img_dyn.shape[2]-1)), :]
 
 # Image to Matrix
 mat_t1w, mat_pet, mat_pet_outline=get_mat_t1w_pet(img_t1w, img_pet, img_pet_outline)
-mat_ref, idxes=get_mat_ref(img_ref, l)
+mat_ref, mat_ref_outline, idxes=get_mat_ref(img_ref, img_ref_outline, l)
 
 # Create Summary
 for i in range((img_dyn.shape[3]-1)//4+1):
+    # QA Report
     fig1=get_qareport_process1(mat_t1w, mat_pet, mat_ref)
     mat_dyn_multiple=get_mat_dyn_multiple(img_dyn, idxes, l, 4*i)
     fig2=get_qareport_process2(fig1, mat_ref, mat_dyn_multiple, l, 4*i, img_dyn.shape[3])
@@ -204,9 +215,14 @@ for i in range((img_dyn.shape[3]-1)//4+1):
     fig2.clear()
     plt.close(fig1)
     plt.close(fig2)
-    fig1=get_qareport_process1(mat_t1w, mat_pet_outline, mat_ref, mode='outline')
-    
+
+    # QA Report (outline)
+    fig1=get_qareport_process1(mat_t1w, mat_pet_outline, mat_ref, mode='Mode2')
+    fig2=get_qareport_process2(fig1, mat_ref_outline, mat_dyn_multiple, l, 4*i, img_dyn.shape[3], mode='Mode2')
+    fig2.savefig(f'{ID}_qaoutline_{i+1}.png')
     fig1.clear()
+    fig2.clear()
     plt.close(fig1)
+    plt.close(fig2)
 
 exit()
