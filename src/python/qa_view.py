@@ -95,10 +95,10 @@ def get_mat_ref(img_ref, img_ref_outline, l):
 def get_qareport_process1(mat_t1w, mat_pet, mat_ref, mode='Mode1'):
     fig=plt.figure(figsize=(8.27, 11.69), dpi=300, facecolor='white')
     if mode=='Mode1':
-        figtitle="QA Report (Overlay): Realignment and Coregistration"
+        figtitle="QA Report (Overlay): Coregistration and Realignment"
         text1='Averaged PET\non T1W'
     if mode=='Mode2':
-        figtitle="QA Report (Outline): Realignment and Coregistration"
+        figtitle="QA Report (Outline): Coregistration and Realignment"
         text1='T1W and\nPET Outline'
 
     fig.text(0.5, 0.93, figtitle, size=18, ha='center', weight='bold')
