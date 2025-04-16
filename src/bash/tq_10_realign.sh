@@ -157,6 +157,11 @@ do
 
   echo "${t1w%_t1w},$Rmaxf,${R_PET%,},$DICE_PET" >> ${QCPET}
 
+  # Create QA Report
+  fslmaths ${pet%_cor}_mean_stripmask.nii.gz -ero tmpmask
+  fslmaths ${pet%_cor}_mean_stripmask.nii.gz -mas tmpmask ${pet%_cor}_mean_outline
+  rm tmpmask.nii
+
   ${THAMEQDIR}/src/python/qa_view.py ${t1w%_t1w} ${t1w}_r.nii ${pet%_cor}_mean.nii ${pet%_cor}_align.nii ${petref}.nii
 
   # Delete temporary files

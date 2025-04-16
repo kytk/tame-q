@@ -43,7 +43,7 @@ def adjust_size_pixdim(mat, pixdims, s=200):
     adjusted=zoom(padded, zoom=s/padded.shape[0], order=1)
     return adjusted
 
-def get_mat_t1w_pet(img_t1w, img_pet):
+def get_mat_t1w_pet(img_t1w, img_pet, img_pet_outline):
     idx1=img_t1w.shape[0]//4
     idx2=img_t1w.shape[0]//2
     idx3=idx1+idx2
@@ -61,9 +61,16 @@ def get_mat_t1w_pet(img_t1w, img_pet):
     mat_pet_5=adjust_size(img_pet[:, ::-1, img_pet.shape[2]//2].transpose(1, 0))
     mat_pet=np.c_[mat_pet_1, mat_pet_2, mat_pet_3, mat_pet_4, mat_pet_5]
 
+    mat_pet_outline_1=adjust_size(img_pet_outline[idx1, ::-1, ::-1].transpose(1, 0))
+    mat_pet_outline_2=adjust_size(img_pet_outline[idx2, ::-1, ::-1].transpose(1, 0))
+    mat_pet_outline_3=adjust_size(img_pet_outline[idx3, ::-1, ::-1].transpose(1, 0))
+    mat_pet_outline_4=adjust_size(img_pet_outline[:, img_pet_outline.shape[1]//2, ::-1].transpose(1, 0))
+    mat_pet_outline_5=adjust_size(img_pet_outline[:, ::-1, img_pet_outline.shape[2]//2].transpose(1, 0))
+    mat_pet_outline=np.c_[mat_pet_outline_1, mat_pet_outline_2, mat_pet_outline_3, mat_pet_outline_4, mat_pet_outline_5]
+
     mat_t1w[:, mat_t1w.shape[1]*3//5:mat_t1w.shape[1]*3//5+2]=mat_t1w.max()
     mat_t1w[:, mat_t1w.shape[1]*4//5:mat_t1w.shape[1]*4//5+2]=mat_t1w.max()
-    return mat_t1w, mat_pet
+    return mat_t1w, mat_pet, mat_pet_outline
 
 def get_mat_ref(img_ref, l):
     idx4=img_ref.shape[0]//4
@@ -78,7 +85,7 @@ def get_mat_ref(img_ref, l):
     idxes=[idx4, idx3, idx2, -idx3, -idx4]
     return mat_ref, idxes
 
-def get_qareport_process1(mat_t1w, mat_pet, mat_ref):
+def get_qareport_process0(mat_t1w, mat_ref):
     fig=plt.figure(figsize=(8.27, 11.69), dpi=300, facecolor='white')
     fig.text(0.5, 0.93, "QA Report: Realignment and Coregistration", size=20, ha='center', weight='bold')
     fig.text(0.08, 0.9, ID, size=14)
@@ -87,6 +94,33 @@ def get_qareport_process1(mat_t1w, mat_pet, mat_ref):
     fig.text(0.075, 0.82, 'Averaged PET\non T1W', ha='center', va='center')
     ax1.imshow(mat_t1w, cmap='gray')
     msk=ax1.imshow(mat_pet, cmap='jet', alpha=0.4).set_clim(0.1, mat_pet.max())
+    ax1.axes.xaxis.set_visible(False)
+    ax1.axes.yaxis.set_visible(False)
+    
+    ax2=fig.add_axes((0.15, 0.61, 0.82, 0.14))
+    fig.text(0.075, 0.68, 'Target image\nfor alignment', ha='center', va='center')
+    ax2.imshow(mat_ref, cmap='gray', aspect=l[2]/l[1]).set_clim(np.percentile(mat_ref, 1), np.percentile(mat_ref, 99))
+    ax2.axes.xaxis.set_visible(False)
+    ax2.axes.yaxis.set_visible(False)
+    return fig
+
+def get_qareport_process1(mat_t1w, mat_pet, mat_ref, mode='pet'):
+    fig=plt.figure(figsize=(8.27, 11.69), dpi=300, facecolor='white')
+    fig.text(0.5, 0.93, "QA Report: Realignment and Coregistration", size=20, ha='center', weight='bold')
+    fig.text(0.08, 0.9, ID, size=14)
+
+    ax1=fig.add_axes((0.15, 0.75, 0.82, 0.14))
+    fig.text(0.075, 0.82, 'Averaged PET\non T1W', ha='center', va='center')
+    ax1.imshow(mat_t1w, cmap='gray')
+    if mode=='pet':
+        msk=ax1.imshow(mat_pet, cmap='jet', alpha=0.4).set_clim(0.1, mat_pet.max())
+    
+    if mode=='outline':
+        outline=np.zeros((mat_pet.shape[0], mat_pet.shape[1], 4))
+        outline[:, :, 0]=1.0
+        outline[:, :, 3]=mat_pet
+        msk=ax1.imshow(outline)
+
     ax1.axes.xaxis.set_visible(False)
     ax1.axes.yaxis.set_visible(False)
     
@@ -131,6 +165,7 @@ img_t1w=nib.load(t1w).get_fdata()
 img_pet=nib.load(pet_mean).get_fdata()
 img_dyn=np.pad(nib.load(pet_dyn).get_fdata(), pad_width=((1, 1), (1, 1), (1, 1), (0, 0)), mode='constant')
 img_ref=np.pad(nib.load(pet_ref).get_fdata(), pad_width=((1, 1), (1, 1), (1, 1)), mode='constant')
+img_pet_outline=nib.load(ID+'_pmpbb3_dyn_mean_outline.nii').get_fdata()
 
 # Determine FOV
 head_pet=nib.load(pet_mean).header
@@ -156,7 +191,7 @@ img_dyn=img_dyn[max(int(Gx-size[0]/2), 0):min(int(Gx+size[0]/2), int(img_dyn.sha
                 max(int(Gz-size[2]/2), 0):min(int(Gz+size[2]/2), int(img_dyn.shape[2]-1)), :]
 
 # Image to Matrix
-mat_t1w, mat_pet=get_mat_t1w_pet(img_t1w, img_pet)
+mat_t1w, mat_pet, mat_pet_outline=get_mat_t1w_pet(img_t1w, img_pet, img_pet_outline)
 mat_ref, idxes=get_mat_ref(img_ref, l)
 
 # Create Summary
@@ -165,7 +200,13 @@ for i in range((img_dyn.shape[3]-1)//4+1):
     mat_dyn_multiple=get_mat_dyn_multiple(img_dyn, idxes, l, 4*i)
     fig2=get_qareport_process2(fig1, mat_ref, mat_dyn_multiple, l, 4*i, img_dyn.shape[3])
     fig2.savefig(f'{ID}_qareport_{i+1}.png')
+    fig1.clear()
     fig2.clear()
+    plt.close(fig1)
     plt.close(fig2)
+    fig1=get_qareport_process1(mat_t1w, mat_pet_outline, mat_ref, mode='outline')
+    
+    fig1.clear()
+    plt.close(fig1)
 
 exit()
