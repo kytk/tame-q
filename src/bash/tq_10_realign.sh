@@ -93,43 +93,22 @@ do
   R_T1W=$(avscale --allparams ${t1w}2MNI.mat | grep 'Rotation Angles' | awk -F '= ' '{print $2}' | sed 's/ /,/g')
   echo "${t1w%_t1w},${R_T1W%,},$DICE_T1W" >> ${QCT1W}
 
-  # Define the reference image of PET
-  #petref=${t1w}_r
-  ###############################
-  # This script creates PET Mean image by aligning each PET frame to the t1w image.
-  # If you want PET Mean image created by the method written in K.Tagai(2022),
-  # please revive the below commentout-commands
-  
-#<< COMMENTOUT
-  # Calculate a mean image from first two images of PET
-  echo "Calculate a mean image of PET"
-  fslroi ${pet} ${pet}_two 0 2 
-  fslmaths ${pet}_two -Tmean ${pet}_ref
-  
-  petref=${pet}_ref
-#COMMENTOUT
-
-  ###############################
-
   ## Split PET frames as ${pet}_f????.nii
   echo "Split PET frames"
   fslsplit ${pet} ${pet}_f
-  
-  ## Which PET frame shows the highest Dice coefficient in the coregistration to T1W
-  echo "Realign each PET frame to reference image"
-  #for t in ${pet}_f*.nii
-  #do 
-    #flirt -dof 6 -in $t -ref ${petref} -cost normmi -searchcost normmi -out ${t%.nii}_r
-    #mri_synthstrip -i ${t%.nii}_r.nii -m ${t%.nii}_r_stripmask.nii
-    #tmp_dice_value=$(calc_dice ${t1w}_r_stripmask.nii.gz ${t%.nii}_r_stripmask.nii)
 
-    #if [[ -z "$min_dice_value" ]] || [[ $min_dice_value > $tmp_dice_value ]]; then
-    #  min_dice_value=$tmp_dice_value
-    #  min_dice_frame=$t
-    #fi
-  #done
+    # Calculate a mean image from first two images of PET
+  echo "Calculate a mean image of PET as target"
+  if [[ $(ls | grep ${pet}_f) >2 ]]; then
+    fslroi ${pet} ${pet}_two 0 2 
+    fslmaths ${pet}_two -Tmean ${pet}_ref  
+    petref=${pet}_ref
+  else
+    petref=${pet}_f0000.nii
+  fi
 
-  ## PET frames are realigned, averaged, and coregistered to T1W
+    ## PET frames are realigned, averaged, and coregistered to T1W
+  echo "Realign each PET frame to target image"
   for t in ${pet}_f*.nii
   do 
     flirt -dof 6 -in $t -ref ${petref} -cost normmi -searchcost normmi -omat ${t%.nii}_align.mat -out ${t%.nii}_align
@@ -141,7 +120,9 @@ do
   echo "Merge realigned frames"
   fslmerge -t ${pet}_align ${pet}_f*_align.nii
   fslmaths ${pet}_align -Tmean ${pet}_align_mean
-  flirt -dof 6 -in ${pet}_align_mean -ref ${t1w}_r -cost normmi -searchcost normmi -omat ${t1w%_t1w}_PET2T1W.mat -out ${pet%_cor}_mean
+  #flirt -dof 6 -in ${pet}_align_mean -ref ${t1w}_r -cost normmi -searchcost normmi -omat ${t1w%_t1w}_PET2T1W.mat -out ${pet%_cor}_mean
+  ${THAMEQDIR}/src/python/cen2cen.py ${pet}_align_mean.nii ${t1w}_r.nii ${pet}_align_mean_trans.nii
+  flirt -dof 6 -in ${pet}_align_mean_trans -ref ${t1w}_r -cost normmi -searchcost normmi -omat ${t1w%_t1w}_PET2T1W.mat -out ${pet%_cor}_mean
 
   # Calculate mean of realigned PET images and
   # divide the image by voxel size to produce kbq/cc image
