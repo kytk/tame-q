@@ -20,6 +20,10 @@ for d in $(find failed -maxdepth 2 -name "$ID" -type d); do
   [[ -e ${d}/histogram_WMref ]] && find ${d}/histogram_WMref -type f -exec mv {} ./histogram_WMref \;
   [[ -e ${d}/subjects ]] && find ${d}/subjects -type d -name ${ID} -exec mv {} ./subjects \;
   find ${d} -maxdepth 1 -type f -exec mv {} . \;
+  
+  if ! find $d -type f | grep -q .; then
+    find $d -depth -type d -exec rmdir {} \;
+  fi
   rmdir --ignore-fail-on-non-empty histogram_GMref histogram_WMref subjects  
 done
 
