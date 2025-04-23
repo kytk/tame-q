@@ -132,7 +132,7 @@ for ID in ${IDs[@]}; do
     status_41+=("OK")
   else
     status_41+=("NA")
-    if [[ $(find . -name "*${ID}*" | wc -l) > 0 ]]; then
+    if [[ $(find . -maxdepth 1 -name "*${ID}*" | wc -l) > 0 ]]; then
       mkdir -p failed/tq_41/${ID}/subjects
       mv *${ID}* failed/tq_41/${ID}
       [[ -e subjects/${ID} ]] && mv subjects/${ID} failed/tq_41/${ID}/subjects/
@@ -148,7 +148,7 @@ for ID in ${IDs[@]}; do
     status_42+=("OK")
   else
     status_42+=("NA")
-    if [[ $(find . -name "*${ID}*" | wc -l) > 0 ]]; then
+    if [[ $(find . -maxdepth 1 -name "*${ID}*" | wc -l) > 0 ]]; then
       mkdir -p failed/tq_42/${ID}/subjects
       mv *${ID}* failed/tq_42/${ID}
       [[ -e subjects/${ID} ]] && mv subjects/${ID} failed/tq_42/${ID}/subjects/
