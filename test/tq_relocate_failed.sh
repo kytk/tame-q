@@ -10,16 +10,16 @@
 #set -x
 
 # Load environment variable
-THAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
+THAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd .. ; pwd)
 source ${THAMEQDIR}/config.env
 
 ID=$1
 for d in $(find failed -maxdepth 2 -name "$ID" -type d); do
   mkdir -p histogram_GMref histogram_WMref subjects
-  find ${d}/histogram_GMref -type f -exec mv {} ./histogram_GMref \;
-  find ${d}/histogram_WMref -type f -exec mv {} ./histogram_WMref \;
-  find ${d}/subjects -type d -name ${ID} -exec mv {} ./subjects \;
-  find ${d} -maxdepth 1 -type f mv {} . \;
+  [[ -e ${d}/histogram_GMref ]] && find ${d}/histogram_GMref -type f -exec mv {} ./histogram_GMref \;
+  [[ -e ${d}/histogram_WMref ]] && find ${d}/histogram_WMref -type f -exec mv {} ./histogram_WMref \;
+  [[ -e ${d}/subjects ]] && find ${d}/subjects -type d -name ${ID} -exec mv {} ./subjects \;
+  find ${d} -maxdepth 1 -type f -exec mv {} . \;
   rmdir --ignore-fail-on-non-empty histogram_GMref histogram_WMref subjects  
 done
 
