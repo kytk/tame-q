@@ -87,8 +87,9 @@ for ID in ${IDs[@]}; do
   else
     status_30+=("NA")
     if [[ $(find . -maxdepth 1 -name "*${ID}*" | wc -l) > 0 ]]; then
-      mkdir -p failed/tq_30/${ID}
+      mkdir -p failed/tq_30/${ID}/histogram_GM
       mv *${ID}* failed/tq_30/${ID}
+      find ./histogram_GMref -name "${ID}*" -exec mv {} failed/tq_30/${ID}/histogram_GM
     fi
   fi
 done
@@ -102,8 +103,11 @@ for ID in ${IDs[@]}; do
   else
     status_31+=("NA")
     if [[ $(find . -maxdepth 1 -name "*${ID}*" | wc -l) > 0 ]]; then
-      mkdir -p failed/tq_31/${ID}
+      mkdir -p failed/tq_31/${ID}/histogram_GMref
+      mkdir failed/tq_31/${ID}/histogram_WMref
       mv *${ID}* failed/tq_31/${ID}
+      find ./histogram_GMref -name "${ID}*" -exec mv {} failed/tq_31/${ID}/histogram_GMref
+      find ./histogram_WMref -name "${ID}*" -exec mv {} failed/tq_31/${ID}/histogram_WMref
     fi
   fi
 done
@@ -119,7 +123,11 @@ for ID in ${IDs[@]}; do
     status_40+=("NA")
     if [[ $(find . -maxdepth 1 -name "*${ID}*" | wc -l) > 0 ]]; then
       mkdir -p failed/tq_40/${ID}/subjects
+      mkdir failed/tq_40/${ID}/histogram_GMref
+      mkdir failed/tq_40/${ID}/histogram_WMref
       mv *${ID}* failed/tq_40/${ID}
+      find ./histogram_GMref -name "${ID}*" -exec mv {} failed/tq_40/${ID}/histogram_GMref
+      find ./histogram_WMref -name "${ID}*" -exec mv {} failed/tq_40/${ID}/histogram_WMref
       [[ -e subjects/${ID} ]] && mv subjects/${ID} failed/tq_40/${ID}/subjects/
     fi
   fi
@@ -134,7 +142,11 @@ for ID in ${IDs[@]}; do
     status_41+=("NA")
     if [[ $(find . -maxdepth 1 -name "*${ID}*" | wc -l) > 0 ]]; then
       mkdir -p failed/tq_41/${ID}/subjects
+      mkdir failed/tq_41/${ID}/histogram_GMref
+      mkdir failed/tq_41/${ID}/histogram_WMref
       mv *${ID}* failed/tq_41/${ID}
+      find ./histogram_GMref -name "${ID}*" -exec mv {} failed/tq_41/${ID}/histogram_GMref
+      find ./histogram_WMref -name "${ID}*" -exec mv {} failed/tq_41/${ID}/histogram_WMref
       [[ -e subjects/${ID} ]] && mv subjects/${ID} failed/tq_41/${ID}/subjects/
     fi
   fi
@@ -150,7 +162,11 @@ for ID in ${IDs[@]}; do
     status_42+=("NA")
     if [[ $(find . -maxdepth 1 -name "*${ID}*" | wc -l) > 0 ]]; then
       mkdir -p failed/tq_42/${ID}/subjects
+      mkdir failed/tq_42/${ID}/histogram_GMref
+      mkdir failed/tq_42/${ID}/histogram_WMref
       mv *${ID}* failed/tq_42/${ID}
+      find ./histogram_GMref -name "${ID}*" -exec mv {} failed/tq_42/${ID}/histogram_GMref
+      find ./histogram_WMref -name "${ID}*" -exec mv {} failed/tq_42/${ID}/histogram_WMref
       [[ -e subjects/${ID} ]] && mv subjects/${ID} failed/tq_42/${ID}/subjects/
     fi
   fi
@@ -176,5 +192,4 @@ echo "ID,tq_10,tq_20,tq_30,tq_31,tq_40,tq_41,tq_42" > Process_Status_${timestamp
 for ((i=0; i<${#IDs[@]}; i++)); do
   echo "${IDs[$i]},${status_10[$i]},${status_20[$i]},${status_30[$i]},${status_31[$i]},${status_40[$i]},${status_41[$i]},${status_42[$i]}" >> Process_Status_${timestamp}.csv
 done
-
 
