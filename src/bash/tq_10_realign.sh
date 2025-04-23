@@ -107,11 +107,35 @@ do
     petref=${pet}_f0000.nii
   fi
 
-    ## PET frames are realigned, averaged, and coregistered to T1W
+  ## PET frames are realigned, averaged, and coregistered to T1W
   echo "Realign each PET frame to target image"
+  
+  # Set MAXRUNNING
+  CPU_LIMIT=$(( $(nproc) - 1 ))
+  if [[ "$CPU_LIMIT" -lt 1 ]]; then CPU_LIMIT=1; fi
+
+  TOTAL_MEM_MB=$(free -m | awk '/^Mem:/{print $2}')
+  RAM_LIMIT=$(( TOTAL_MEM_MB / 2048 ))
+  if [ "$RAM_LIMIT" -lt 1 ]; then RAM_LIMIT=1; fi
+
+  if [[ "$CPU_LIMIT" -le "$RAM_LIMIT" ]]; then
+    MAX_JOBS=$CPU_LIMIT
+  else
+    MAX_JOBS=$RAM_LIMIT
+  fi
+
   for t in ${pet}_f*.nii
-  do 
-    flirt -dof 6 -in $t -ref ${petref} -cost normmi -searchcost normmi -omat ${t%.nii}_align.mat -out ${t%.nii}_align
+  do
+    while [[ "$(jobs -rp | wc -l)" -ge "$MAX_JOBS" ]]; do
+      sleep 10s
+    done
+    
+    flirt -dof 6 -in $t -ref ${petref} -cost normmi -searchcost normmi -omat ${t%.nii}_align.mat -out ${t%.nii}_align &  
+  done
+
+  wait
+  
+  for t_align in ${pet}_f*_align.mat; do
     Rf="${Rf} $(avscale --allparams ${t%.nii}_align.mat | grep 'Rotation Angles' | awk -F '= ' '{print $2}')"
   done
   Rmaxf=$(for v in $Rf; do echo $v; done | sort -nr | head -n1)
