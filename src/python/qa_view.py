@@ -43,53 +43,53 @@ def adjust_size_pixdim(mat, pixdims, s=200):
     adjusted=zoom(padded, zoom=s/padded.shape[0], order=1)
     return adjusted
 
+def get_display_indexes(img, n=5):
+    tmp=img.max(axis=0).max(axis=0)
+    nonzeroidxes=np.where(tmp>0)[0]
+    steprange=(nonzeroidxes[-1]-nonzeroidxes[0])//(n+1)
+    return [nonzeroidxes[0]+(i+1)*steprange for i in range(n)]
+
 def get_mat_t1w_pet(img_t1w, img_pet, img_pet_outline):
-    idx1=img_t1w.shape[0]//4
-    idx2=img_t1w.shape[0]//2
-    idx3=idx1+idx2
-    mat_t1w_1=adjust_size(img_t1w[idx1, ::-1, ::-1].transpose(1, 0))
-    mat_t1w_2=adjust_size(img_t1w[idx2, ::-1, ::-1].transpose(1, 0))
-    mat_t1w_3=adjust_size(img_t1w[idx3, ::-1, ::-1].transpose(1, 0))
-    mat_t1w_4=adjust_size(img_t1w[:, img_t1w.shape[1]//2, ::-1].transpose(1, 0))
-    mat_t1w_5=adjust_size(img_t1w[:, ::-1, img_t1w.shape[2]//2].transpose(1, 0))
+    idxes=get_display_indexes(img_pet_outline)
+    
+    mat_t1w_1=adjust_size(img_t1w[:, ::-1, idxes[0]].transpose(1, 0))
+    mat_t1w_2=adjust_size(img_t1w[:, ::-1, idxes[1]].transpose(1, 0))
+    mat_t1w_3=adjust_size(img_t1w[:, ::-1, idxes[2]].transpose(1, 0))
+    mat_t1w_4=adjust_size(img_t1w[:, ::-1, idxes[3]].transpose(1, 0))
+    mat_t1w_5=adjust_size(img_t1w[:, ::-1, idxes[4]].transpose(1, 0))
     mat_t1w=np.c_[mat_t1w_1, mat_t1w_2, mat_t1w_3, mat_t1w_4, mat_t1w_5]
 
-    mat_pet_1=adjust_size(img_pet[idx1, ::-1, ::-1].transpose(1, 0))
-    mat_pet_2=adjust_size(img_pet[idx2, ::-1, ::-1].transpose(1, 0))
-    mat_pet_3=adjust_size(img_pet[idx3, ::-1, ::-1].transpose(1, 0))
-    mat_pet_4=adjust_size(img_pet[:, img_pet.shape[1]//2, ::-1].transpose(1, 0))
-    mat_pet_5=adjust_size(img_pet[:, ::-1, img_pet.shape[2]//2].transpose(1, 0))
+    mat_pet_1=adjust_size(img_pet[:, ::-1, idxes[0]].transpose(1, 0))
+    mat_pet_2=adjust_size(img_pet[:, ::-1, idxes[1]].transpose(1, 0))
+    mat_pet_3=adjust_size(img_pet[:, ::-1, idxes[2]].transpose(1, 0))
+    mat_pet_4=adjust_size(img_pet[:, ::-1, idxes[3]].transpose(1, 0))
+    mat_pet_5=adjust_size(img_pet[:, ::-1, idxes[4]].transpose(1, 0))
     mat_pet=np.c_[mat_pet_1, mat_pet_2, mat_pet_3, mat_pet_4, mat_pet_5]
 
-    mat_pet_outline_1=adjust_size(img_pet_outline[idx1, ::-1, ::-1].transpose(1, 0))
-    mat_pet_outline_2=adjust_size(img_pet_outline[idx2, ::-1, ::-1].transpose(1, 0))
-    mat_pet_outline_3=adjust_size(img_pet_outline[idx3, ::-1, ::-1].transpose(1, 0))
-    mat_pet_outline_4=adjust_size(img_pet_outline[:, img_pet_outline.shape[1]//2, ::-1].transpose(1, 0))
-    mat_pet_outline_5=adjust_size(img_pet_outline[:, ::-1, img_pet_outline.shape[2]//2].transpose(1, 0))
+    mat_pet_outline_1=adjust_size(img_pet_outline[:, ::-1, idxes[0]].transpose(1, 0))
+    mat_pet_outline_2=adjust_size(img_pet_outline[:, ::-1, idxes[1]].transpose(1, 0))
+    mat_pet_outline_3=adjust_size(img_pet_outline[:, ::-1, idxes[2]].transpose(1, 0))
+    mat_pet_outline_4=adjust_size(img_pet_outline[:, ::-1, idxes[3]].transpose(1, 0))
+    mat_pet_outline_5=adjust_size(img_pet_outline[:, ::-1, idxes[4]].transpose(1, 0))
     mat_pet_outline=np.c_[mat_pet_outline_1, mat_pet_outline_2, mat_pet_outline_3, mat_pet_outline_4, mat_pet_outline_5]
 
-    mat_t1w[:, mat_t1w.shape[1]*3//5:mat_t1w.shape[1]*3//5+2]=mat_t1w.max()
-    mat_t1w[:, mat_t1w.shape[1]*4//5:mat_t1w.shape[1]*4//5+2]=mat_t1w.max()
     return mat_t1w, mat_pet, mat_pet_outline
 
 def get_mat_ref(img_ref, img_ref_outline, l):
-    idx4=img_ref.shape[0]//4
-    idx3=img_ref.shape[0]//3
-    idx2=img_ref.shape[0]//2
-    mat_ref_1=adjust_size_pixdim(img_ref[idx4, ::-1, ::-1].transpose(1, 0), [l[2], l[1]])
-    mat_ref_2=adjust_size_pixdim(img_ref[idx3, ::-1, ::-1].transpose(1, 0), [l[2], l[1]])
-    mat_ref_3=adjust_size_pixdim(img_ref[idx2, ::-1, ::-1].transpose(1, 0), [l[2], l[1]])
-    mat_ref_4=adjust_size_pixdim(img_ref[-idx3, ::-1, ::-1].transpose(1, 0), [l[2], l[1]])
-    mat_ref_5=adjust_size_pixdim(img_ref[-idx4, ::-1, ::-1].transpose(1, 0), [l[2], l[1]])
+    idxes=get_display_indexes(img_ref_outline)
+    mat_ref_1=adjust_size_pixdim(img_ref[:, ::-1, idxes[0]].transpose(1, 0), [l[1], l[0]])
+    mat_ref_2=adjust_size_pixdim(img_ref[:, ::-1, idxes[1]].transpose(1, 0), [l[1], l[0]])
+    mat_ref_3=adjust_size_pixdim(img_ref[:, ::-1, idxes[2]].transpose(1, 0), [l[1], l[0]])
+    mat_ref_4=adjust_size_pixdim(img_ref[:, ::-1, idxes[3]].transpose(1, 0), [l[1], l[0]])
+    mat_ref_5=adjust_size_pixdim(img_ref[:, ::-1, idxes[4]].transpose(1, 0), [l[1], l[0]])
     mat_ref=np.c_[mat_ref_1, mat_ref_2, mat_ref_3, mat_ref_4, mat_ref_5]
 
-    mat_ref_outline_1=adjust_size_pixdim(img_ref_outline[idx4, ::-1, ::-1].transpose(1, 0), [l[2], l[1]])
-    mat_ref_outline_2=adjust_size_pixdim(img_ref_outline[idx3, ::-1, ::-1].transpose(1, 0), [l[2], l[1]])
-    mat_ref_outline_3=adjust_size_pixdim(img_ref_outline[idx2, ::-1, ::-1].transpose(1, 0), [l[2], l[1]])
-    mat_ref_outline_4=adjust_size_pixdim(img_ref_outline[-idx3, ::-1, ::-1].transpose(1, 0), [l[2], l[1]])
-    mat_ref_outline_5=adjust_size_pixdim(img_ref_outline[-idx4, ::-1, ::-1].transpose(1, 0), [l[2], l[1]])
+    mat_ref_outline_1=adjust_size_pixdim(img_ref_outline[:, ::-1, idxes[0]].transpose(1, 0), [l[1], l[0]])
+    mat_ref_outline_2=adjust_size_pixdim(img_ref_outline[:, ::-1, idxes[1]].transpose(1, 0), [l[1], l[0]])
+    mat_ref_outline_3=adjust_size_pixdim(img_ref_outline[:, ::-1, idxes[2]].transpose(1, 0), [l[1], l[0]])
+    mat_ref_outline_4=adjust_size_pixdim(img_ref_outline[:, ::-1, idxes[3]].transpose(1, 0), [l[1], l[0]])
+    mat_ref_outline_5=adjust_size_pixdim(img_ref_outline[:, ::-1, idxes[4]].transpose(1, 0), [l[1], l[0]])
     mat_ref_outline=np.c_[mat_ref_outline_1, mat_ref_outline_2, mat_ref_outline_3, mat_ref_outline_4, mat_ref_outline_5]
-    idxes=[idx4, idx3, idx2, -idx3, -idx4]
     return mat_ref, mat_ref_outline, idxes
 
 def get_qareport_process1(mat_t1w, mat_pet, mat_ref, mode='Mode1'):
@@ -121,15 +121,15 @@ def get_qareport_process1(mat_t1w, mat_pet, mat_ref, mode='Mode1'):
     
     ax2=fig.add_axes((0.15, 0.61, 0.82, 0.14))
     fig.text(0.075, 0.68, 'Target image\nfor alignment', ha='center', va='center')
-    ax2.imshow(mat_ref, cmap='gray', aspect=l[2]/l[1]).set_clim(np.percentile(mat_ref, 1), np.percentile(mat_ref, 99))
+    ax2.imshow(mat_ref, cmap='gray', aspect=l[1]/l[0]).set_clim(np.percentile(mat_ref, 1), np.percentile(mat_ref, 99))
     ax2.axes.xaxis.set_visible(False)
     ax2.axes.yaxis.set_visible(False)
     return fig
 
 def get_mat_dyn(img_dyn, idxes, l, f_num):
-    mat_dyn=adjust_size_pixdim(img_dyn[idxes[0], ::-1, ::-1, f_num].transpose(1, 0), [l[2], l[1]])
+    mat_dyn=adjust_size_pixdim(img_dyn[:, ::-1, idxes[0], f_num].transpose(1, 0), [l[1], l[0]])
     for i in range(1, 5):
-        mat_dyn=np.c_[mat_dyn, adjust_size_pixdim(img_dyn[idxes[i], ::-1, ::-1, f_num].transpose(1, 0), [l[2], l[1]])]
+        mat_dyn=np.c_[mat_dyn, adjust_size_pixdim(img_dyn[:, ::-1, idxes[i], f_num].transpose(1, 0), [l[1], l[0]])]
     return mat_dyn
 
 def get_mat_dyn_multiple(img_dyn, idxes, l, start_num):
@@ -142,15 +142,15 @@ def get_qareport_process2(fig, mat_ref, mat_dyn_multiple, l, start_num, N_frame,
         axs.append(fig.add_axes((0.15, 0.47-0.14*i, 0.82, 0.14)))
         fig.text(0.075, 0.54-0.14*i, f'Frame\n{start_num+i+1} / {N_frame}', ha='center', va='center')
         if mode=='Mode1':
-            axs[i].imshow(mat_ref, cmap='gray', aspect=l[2]/l[1]).set_clim(np.percentile(mat_ref, 1), np.percentile(mat_ref, 99))
-            axs[i].imshow(mat_dyn, cmap='jet', aspect=l[2]/l[1], alpha=0.4).set_clim(0, mat_ref.max())
+            axs[i].imshow(mat_ref, cmap='gray', aspect=l[1]/l[0]).set_clim(np.percentile(mat_ref, 1), np.percentile(mat_ref, 99))
+            axs[i].imshow(mat_dyn, cmap='jet', aspect=l[1]/l[0], alpha=0.4).set_clim(0, mat_ref.max())
             footer='Each PET frame is overlaid on the target image.'
         if mode=='Mode2':
-            axs[i].imshow(mat_dyn, cmap='gray', aspect=l[2]/l[1]).set_clim(np.percentile(mat_dyn, 1), np.percentile(mat_dyn, 99))
+            axs[i].imshow(mat_dyn, cmap='gray', aspect=l[1]/l[0]).set_clim(np.percentile(mat_dyn, 1), np.percentile(mat_dyn, 99))
             matrix_outline=np.zeros((mat_ref.shape[0], mat_ref.shape[1], 4))
             matrix_outline[:, :, 0]=1.0
             matrix_outline[:, :, 3]=mat_ref
-            axs[i].imshow(matrix_outline, aspect=l[2]/l[1])
+            axs[i].imshow(matrix_outline, aspect=l[1]/l[0]).set_clim(0, 1)
             footer='The target image outline is overlaid on each frame.'
 
         axs[i].axes.xaxis.set_visible(False)
