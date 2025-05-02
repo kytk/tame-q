@@ -53,8 +53,18 @@ done
 ${THAMEQDIR}/src/bash/tq_10_realign.sh
 status_10=()
 for ID in ${IDs[@]}; do
+Rmax=$(cat coregistration_results_pet.csv | grep ${ID}, | awk -F , '{print $2}' | sed 's/^-//g')
+Rx=$(cat coregistration_results_pet.csv | grep ${ID}, | awk -F , '{print $3}' | sed 's/^-//g')
+Ry=$(cat coregistration_results_pet.csv | grep ${ID}, | awk -F , '{print $4}' | sed 's/^-//g')
+Rz=$(cat coregistration_results_pet.csv | grep ${ID}, | awk -F , '{print $5}' | sed 's/^-//g')
+Dice=0$(cat coregistration_results_pet.csv | grep ${ID}, | awk -F , '{print $6}')
+  
   if [[ -e ${ID}_t1w_r.nii ]] && [[ -e ${ID}_pmpbb3_dyn_mean.nii ]]; then
-    status_10+=("OK")
+    if (( $(echo "$Rmax < 1" | bc -l) )) && (( $(echo "$Rx < 1" | bc -l) )) && (( $(echo "$Ry < 1" | bc -l) )) && (( $(echo "$Rz < 1" | bc -l) )) && (( $(echo "$Dice > 0.94" | bc -l) )); then
+      status_10+=("OK")
+    else
+      status_10+=("CHECK")
+    fi
   else
     status_10+=("NA")
     mkdir -p failed/tq_10/${ID}
