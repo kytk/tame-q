@@ -83,7 +83,7 @@ do
   echo "Rigid body transform of ${t1w} to MNI"
   #bet ${t1w}_o ${t1w}_brain -R -B -f 0.20 # Brain Extraction
   mri_synthstrip -i ${t1w}_o.nii -o ${t1w}_brain.nii -m ${t1w}_brain_mask.nii
-  flirt -dof 6 -in ${t1w}_brain -ref ${pad} -omat ${t1w}2MNI.mat # Conversion matrix from native space to MNI
+  flirt -dof 6 -in ${t1w}_brain -ref ${pad} -omat ${t1w}2MNI.mat -out ${t1w}_brain_r # Conversion matrix from native space to MNI
   flirt -dof 6 -in ${t1w}_o -ref ${pad} -applyxfm -init ${t1w}2MNI.mat -out ${t1w}_r # Realign T1 image to MNI template
   flirt -dof 6 -in ${t1w}_brain_mask.nii -ref ${pad} -interp nearestneighbour -applyxfm -init ${t1w}2MNI.mat -out ${t1w}_brain_mask_r.nii
   
@@ -146,7 +146,11 @@ do
   fslmaths ${pet}_align -Tmean ${pet}_align_mean
   #flirt -dof 6 -in ${pet}_align_mean -ref ${t1w}_r -cost normmi -searchcost normmi -omat ${t1w%_t1w}_PET2T1W.mat -out ${pet%_cor}_mean
   ${THAMEQDIR}/src/python/cen2cen.py ${pet}_align_mean.nii ${t1w}_r.nii ${pet}_align_mean_trans.nii
-  flirt -dof 6 -in ${pet}_align_mean_trans -ref ${t1w}_r -cost normmi -searchcost normmi -omat ${t1w%_t1w}_PET2T1W.mat -out ${pet%_cor}_mean
+  mri_synthstrip -i ${pet}_align_mean_trans.nii -o ${pet}_align_mean_trans_brain.nii.gz -m ${pet}_align_mean_trans_stripmask.nii.gz
+  #flirt -dof 6 -in ${pet}_align_mean_trans -ref ${t1w}_r -cost normmi -searchcost normmi -omat ${t1w%_t1w}_PET2T1W.mat -out ${pet%_cor}_mean
+  flirt -dof 6 -in ${pet}_align_mean_trans_brain -ref ${t1w}_brain_r -cost normmi -searchcost normmi -omat ${t1w%_t1w}_PET2T1W.mat
+  flirt -dof 6 -in ${pet}_align_mean_trans_stripmask -ref ${t1w}_brain_r -interp nearestneighbour -applyxfm -init ${t1w%_t1w}_PET2T1W.mat -out ${pet%_cor}_mean_stripmask
+  flirt -dof 6 -in ${pet}_align_mean_trans -ref ${t1w}_brain_r -applyxfm -init ${t1w%_t1w}_PET2T1W.mat -out ${pet%_cor}_mean
 
   # Calculate mean of realigned PET images and
   # divide the image by voxel size to produce kbq/cc image
@@ -156,8 +160,7 @@ do
   voxsize=$(echo "scale=3;$pixdim1 * $pixdim2 * $pixdim3" | bc)
   fslmaths ${pet%_cor}_mean -div $voxsize -div 1000 ${pet%_cor}_mean
   
-  mri_synthstrip -i ${pet%_cor}_mean.nii -m ${pet%_cor}_mean_stripmask.nii.gz
-  DICE_PET=$(calc_dice ${t1w}_brain_mask_r.nii ${pet%_cor}_mean_stripmask.nii.gz)
+  DICE_PET=$(calc_dice ${t1w}_brain_mask_r.nii ${pet%_cor}_mean_stripmask.nii)
   R_PET=$(avscale --allparams ${t1w%_t1w}_PET2T1W.mat | grep 'Rotation Angles' | awk -F '= ' '{print $2}' | sed 's/ /,/g')
 
   echo "${t1w%_t1w},$Rmaxf,${R_PET%,},$DICE_PET" >> ${QCPET}
