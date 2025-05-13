@@ -33,14 +33,14 @@ def pad2square_pixdim(mat, pixdims):
     padded=np.pad(mat, ((pad_top.astype('int16'), pad_bottom.astype('int16')), (pad_left.astype('int16'), pad_right.astype('int16'))), mode='constant')
     return padded
 
-def adjust_size(mat, s=200):
+def adjust_size(mat, s=200, interp=1):
     padded=pad2square(mat)
-    adjusted=zoom(padded, zoom=s/padded.shape[0], order=1)
+    adjusted=zoom(padded, zoom=s/padded.shape[0], order=interp)
     return adjusted
 
-def adjust_size_pixdim(mat, pixdims, s=200):
+def adjust_size_pixdim(mat, pixdims, s=200, interp=1):
     padded=pad2square_pixdim(mat, pixdims)
-    adjusted=zoom(padded, zoom=s/padded.shape[0], order=1)
+    adjusted=zoom(padded, zoom=s/padded.shape[0], order=interp)
     return adjusted
 
 def get_display_indexes(img, n=5):
@@ -49,8 +49,8 @@ def get_display_indexes(img, n=5):
     steprange=(nonzeroidxes[-1]-nonzeroidxes[0])//(n+1)
     return [nonzeroidxes[0]+(i+1)*steprange for i in range(n)]
 
-def get_mat_t1w_pet(img_t1w, img_pet, img_pet_outline):
-    idxes=get_display_indexes(img_pet_outline)
+def get_mat_t1w_pet(img_t1w, img_pet, img_t1w_outline):
+    idxes=get_display_indexes(img_t1w_outline)
     
     mat_t1w_1=adjust_size(img_t1w[:, ::-1, idxes[0]].transpose(1, 0))
     mat_t1w_2=adjust_size(img_t1w[:, ::-1, idxes[1]].transpose(1, 0))
@@ -66,17 +66,17 @@ def get_mat_t1w_pet(img_t1w, img_pet, img_pet_outline):
     mat_pet_5=adjust_size(img_pet[:, ::-1, idxes[4]].transpose(1, 0))
     mat_pet=np.c_[mat_pet_1, mat_pet_2, mat_pet_3, mat_pet_4, mat_pet_5]
 
-    mat_pet_outline_1=adjust_size(img_pet_outline[:, ::-1, idxes[0]].transpose(1, 0))
-    mat_pet_outline_2=adjust_size(img_pet_outline[:, ::-1, idxes[1]].transpose(1, 0))
-    mat_pet_outline_3=adjust_size(img_pet_outline[:, ::-1, idxes[2]].transpose(1, 0))
-    mat_pet_outline_4=adjust_size(img_pet_outline[:, ::-1, idxes[3]].transpose(1, 0))
-    mat_pet_outline_5=adjust_size(img_pet_outline[:, ::-1, idxes[4]].transpose(1, 0))
-    mat_pet_outline=np.c_[mat_pet_outline_1, mat_pet_outline_2, mat_pet_outline_3, mat_pet_outline_4, mat_pet_outline_5]
+    mat_t1w_outline_1=adjust_size(img_t1w_outline[:, ::-1, idxes[0]].transpose(1, 0), interp=0)
+    mat_t1w_outline_2=adjust_size(img_t1w_outline[:, ::-1, idxes[1]].transpose(1, 0), interp=0)
+    mat_t1w_outline_3=adjust_size(img_t1w_outline[:, ::-1, idxes[2]].transpose(1, 0), interp=0)
+    mat_t1w_outline_4=adjust_size(img_t1w_outline[:, ::-1, idxes[3]].transpose(1, 0), interp=0)
+    mat_t1w_outline_5=adjust_size(img_t1w_outline[:, ::-1, idxes[4]].transpose(1, 0), interp=0)
+    mat_t1w_outline=np.c_[mat_t1w_outline_1, mat_t1w_outline_2, mat_t1w_outline_3, mat_t1w_outline_4, mat_t1w_outline_5]
 
-    return mat_t1w, mat_pet, mat_pet_outline
+    return mat_t1w, mat_pet, mat_t1w_outline
 
-def get_mat_ref(img_ref, img_ref_outline, l):
-    idxes=get_display_indexes(img_ref_outline)
+def get_mat_ref(img_ref, img_t1w_outline4pet, l, interp=1):
+    idxes=get_display_indexes(img_t1w_outline4pet)
     mat_ref_1=adjust_size_pixdim(img_ref[:, ::-1, idxes[0]].transpose(1, 0), [l[1], l[0]])
     mat_ref_2=adjust_size_pixdim(img_ref[:, ::-1, idxes[1]].transpose(1, 0), [l[1], l[0]])
     mat_ref_3=adjust_size_pixdim(img_ref[:, ::-1, idxes[2]].transpose(1, 0), [l[1], l[0]])
@@ -84,11 +84,11 @@ def get_mat_ref(img_ref, img_ref_outline, l):
     mat_ref_5=adjust_size_pixdim(img_ref[:, ::-1, idxes[4]].transpose(1, 0), [l[1], l[0]])
     mat_ref=np.c_[mat_ref_1, mat_ref_2, mat_ref_3, mat_ref_4, mat_ref_5]
 
-    mat_ref_outline_1=adjust_size_pixdim(img_ref_outline[:, ::-1, idxes[0]].transpose(1, 0), [l[1], l[0]])
-    mat_ref_outline_2=adjust_size_pixdim(img_ref_outline[:, ::-1, idxes[1]].transpose(1, 0), [l[1], l[0]])
-    mat_ref_outline_3=adjust_size_pixdim(img_ref_outline[:, ::-1, idxes[2]].transpose(1, 0), [l[1], l[0]])
-    mat_ref_outline_4=adjust_size_pixdim(img_ref_outline[:, ::-1, idxes[3]].transpose(1, 0), [l[1], l[0]])
-    mat_ref_outline_5=adjust_size_pixdim(img_ref_outline[:, ::-1, idxes[4]].transpose(1, 0), [l[1], l[0]])
+    mat_ref_outline_1=adjust_size_pixdim(img_t1w_outline4pet[:, ::-1, idxes[0]].transpose(1, 0), [l[1], l[0]], interp=0)
+    mat_ref_outline_2=adjust_size_pixdim(img_t1w_outline4pet[:, ::-1, idxes[1]].transpose(1, 0), [l[1], l[0]], interp=0)
+    mat_ref_outline_3=adjust_size_pixdim(img_t1w_outline4pet[:, ::-1, idxes[2]].transpose(1, 0), [l[1], l[0]], interp=0)
+    mat_ref_outline_4=adjust_size_pixdim(img_t1w_outline4pet[:, ::-1, idxes[3]].transpose(1, 0), [l[1], l[0]], interp=0)
+    mat_ref_outline_5=adjust_size_pixdim(img_t1w_outline4pet[:, ::-1, idxes[4]].transpose(1, 0), [l[1], l[0]], interp=0)
     mat_ref_outline=np.c_[mat_ref_outline_1, mat_ref_outline_2, mat_ref_outline_3, mat_ref_outline_4, mat_ref_outline_5]
     return mat_ref, mat_ref_outline, idxes
 
@@ -99,22 +99,25 @@ def get_qareport_process1(mat_t1w, mat_pet, mat_ref, mode='Mode1'):
         text1='Averaged PET\non T1W'
     if mode=='Mode2':
         figtitle="QA Report (Outline): Coregistration and Realignment"
-        text1='T1W and\nPET Outline'
+        text1='PET and\nT1W Outline'
 
     fig.text(0.5, 0.93, figtitle, size=18, ha='center', weight='bold')
     fig.text(0.5, 0.9, ID, size=14, ha='center', va='center')
 
     ax1=fig.add_axes((0.15, 0.75, 0.82, 0.14))
     fig.text(0.075, 0.82, text1, ha='center', va='center')
-    ax1.imshow(mat_t1w, cmap='gray')
+    
     if mode=='Mode1':
+        ax1.imshow(mat_t1w, cmap='gray')
         msk=ax1.imshow(mat_pet, cmap='jet', alpha=0.4).set_clim(0.1, mat_pet.max())
     
     if mode=='Mode2':
-        outline=np.zeros((mat_pet.shape[0], mat_pet.shape[1], 4))
+        ax1.imshow(mat_pet, cmap='gray').set_clim(np.percentile(mat_pet, 1), np.percentile(mat_pet, 99))
+        outline=np.zeros((mat_t1w.shape[0], mat_t1w.shape[1], 4))
         outline[:, :, 0]=1.0
-        outline[:, :, 3]=mat_pet
-        msk=ax1.imshow(outline)
+        outline[:, :, 3]=mat_t1w
+        #msk=ax1.imshow(outline)
+        ax1.imshow(outline, interpolation='nearest').set_clim(0, 1)
 
     ax1.axes.xaxis.set_visible(False)
     ax1.axes.yaxis.set_visible(False)
@@ -150,7 +153,7 @@ def get_qareport_process2(fig, mat_ref, mat_dyn_multiple, l, start_num, N_frame,
             matrix_outline=np.zeros((mat_ref.shape[0], mat_ref.shape[1], 4))
             matrix_outline[:, :, 0]=1.0
             matrix_outline[:, :, 3]=mat_ref
-            axs[i].imshow(matrix_outline, aspect=l[1]/l[0]).set_clim(0, 1)
+            axs[i].imshow(matrix_outline, aspect=l[1]/l[0], interpolation='nearest').set_clim(0, 1)
             footer='The target image outline is overlaid on each frame.'
 
         axs[i].axes.xaxis.set_visible(False)
@@ -168,11 +171,11 @@ pet_ref=sys.argv[5]
 
 # Load Data
 img_t1w=nib.load(t1w).get_fdata()
+img_t1w_outline=nib.load(ID+'_t1w_brain_outline_r.nii').get_fdata()
+img_t1w_outline4pet=nib.load(ID+'_t1w_brain_outline4pet.nii').get_fdata()
 img_pet=nib.load(pet_mean).get_fdata()
-img_pet_outline=nib.load(ID+'_pmpbb3_dyn_mean_outline.nii').get_fdata()
 img_dyn=np.pad(nib.load(pet_dyn).get_fdata(), pad_width=((1, 1), (1, 1), (1, 1), (0, 0)), mode='constant')
 img_ref=np.pad(nib.load(pet_ref).get_fdata(), pad_width=((1, 1), (1, 1), (1, 1)), mode='constant')
-img_ref_outline=np.pad(nib.load(ID+'_pmpbb3_dyn_ref_outline.nii').get_fdata(), pad_width=((1, 1), (1, 1), (1, 1)), mode='constant')
 
 # Determine FOV
 head_pet=nib.load(pet_mean).header
@@ -193,16 +196,16 @@ Gz=np.average(np.arange(zaxis_sum.size), weights=zaxis_sum)
 img_ref=img_ref[max(int(Gx-size[0]/2), 0):min(int(Gx+size[0]/2), int(img_ref.shape[0]-1)),
                 max(int(Gy-size[1]/2), 0):min(int(Gy+size[1]/2), int(img_ref.shape[1]-1)),
                 max(int(Gz-size[2]/2), 0):min(int(Gz+size[2]/2), int(img_ref.shape[2]-1))]
-img_ref_outline=img_ref_outline[max(int(Gx-size[0]/2), 0):min(int(Gx+size[0]/2), int(img_ref_outline.shape[0]-1)),
-                max(int(Gy-size[1]/2), 0):min(int(Gy+size[1]/2), int(img_ref_outline.shape[1]-1)),
-                max(int(Gz-size[2]/2), 0):min(int(Gz+size[2]/2), int(img_ref_outline.shape[2]-1))]
+img_t1w_outline4pet=img_t1w_outline4pet[max(int(Gx-size[0]/2), 0):min(int(Gx+size[0]/2), int(img_t1w_outline4pet.shape[0]-1)),
+                max(int(Gy-size[1]/2), 0):min(int(Gy+size[1]/2), int(img_t1w_outline4pet.shape[1]-1)),
+                max(int(Gz-size[2]/2), 0):min(int(Gz+size[2]/2), int(img_t1w_outline4pet.shape[2]-1))]
 img_dyn=img_dyn[max(int(Gx-size[0]/2), 0):min(int(Gx+size[0]/2), int(img_dyn.shape[0]-1)),
                 max(int(Gy-size[1]/2), 0):min(int(Gy+size[1]/2), int(img_dyn.shape[1]-1)),
                 max(int(Gz-size[2]/2), 0):min(int(Gz+size[2]/2), int(img_dyn.shape[2]-1)), :]
 
 # Image to Matrix
-mat_t1w, mat_pet, mat_pet_outline=get_mat_t1w_pet(img_t1w, img_pet, img_pet_outline)
-mat_ref, mat_ref_outline, idxes=get_mat_ref(img_ref, img_ref_outline, l)
+mat_t1w, mat_pet, mat_t1w_outline=get_mat_t1w_pet(img_t1w, img_pet, img_t1w_outline)
+mat_ref, mat_ref_outline, idxes=get_mat_ref(img_ref, img_t1w_outline4pet, l)
 
 # Create Summary
 for i in range((img_dyn.shape[3]-1)//4+1):
@@ -217,7 +220,7 @@ for i in range((img_dyn.shape[3]-1)//4+1):
     plt.close(fig2)
 
     # QA Report (outline)
-    fig1=get_qareport_process1(mat_t1w, mat_pet_outline, mat_ref, mode='Mode2')
+    fig1=get_qareport_process1(mat_t1w_outline, mat_pet, mat_ref, mode='Mode2')
     fig2=get_qareport_process2(fig1, mat_ref_outline, mat_dyn_multiple, l, 4*i, img_dyn.shape[3], mode='Mode2')
     fig2.savefig(f'{ID}_qaoutline_{i+1}.png')
     fig1.clear()
