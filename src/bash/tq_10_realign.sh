@@ -90,16 +90,17 @@ do
   ## Split PET frames as ${pet}_f????.nii
   echo "Split PET frames"
   fslsplit ${pet} ${pet}_f
-
-    # Calculate a mean image from first two images of PET
+  
+  # Calculate a mean image from first two images of PET
   echo "Calculate a mean image of PET as target"
-  if [[ $(ls | grep ${pet}_f) >2 ]]; then
-    fslroi ${pet} ${pet}_two 0 2 
-    fslmaths ${pet}_two -Tmean ${pet}_ref  
-    petref=${pet}_ref
-  else
-    petref=${pet}_f0000.nii
-  fi
+  #if [[ $(ls | grep ${pet}_f) >2 ]]; then
+  #  fslroi ${pet} ${pet}_two 0 2 
+  #  fslmaths ${pet}_two -Tmean ${pet}_ref  
+  #  petref=${pet}_ref
+  #else
+  #  petref=${pet}_f0000
+  #fi
+  petref=${pet}_f0000
 
   ## PET frames are realigned, averaged, and coregistered to T1W
   echo "Realign each PET frame to target image"
@@ -120,6 +121,11 @@ do
 
   for t in ${pet}_f*[0-9].nii
   do
+    if [[ "$t" = "${pet}_f0000.nii" ]]; then
+      cp ${pet}_f0000.nii ${pet}_f0000_align.nii
+      continue
+    fi
+
     while [[ "$(jobs -rp | wc -l)" -ge "$MAX_JOBS" ]]; do
       sleep 10s
     done
@@ -138,9 +144,12 @@ do
   echo "Merge realigned frames"
   fslmerge -t ${pet}_align ${pet}_f*_align.nii
   fslmaths ${pet}_align -Tmean ${pet}_align_mean
-  fslmaths ${pet}_align_mean -fmean ${pet}_align_mean_fmean
+  #fslmaths ${pet}_align_mean -fmean ${pet}_align_mean_fmean
   #flirt -dof 6 -in ${pet}_align_mean -ref ${t1w}_r -cost normmi -searchcost normmi -omat ${t1w%_t1w}_PET2T1W.mat -out ${pet}_mean
-  flirt -dof 6 -in ${pet}_align_mean_fmean -ref ${t1w}_r -cost normmi -searchcost normmi -omat ${t1w%_t1w}_PET2MNI.mat
+  fslmaths ${pet}_align_mean -thr 0 -bin -fillh -ero ${pet}_align_headmask
+  fslmaths ${pet}_align_mean -mas ${pet}_align_headmask ${pet}_align_mean_head
+
+  flirt -dof 6 -in ${pet}_align_mean_head -ref ${t1w}_r -cost normmi -searchcost normmi -omat ${t1w%_t1w}_PET2MNI.mat
   flirt -dof 6 -in ${pet}_align_mean -ref ${t1w}_r -applyxfm -init ${t1w%_t1w}_PET2MNI.mat -out ${pet}_mean
 
   # Calculate mean of realigned PET images and
@@ -162,7 +171,7 @@ do
   rm tmpmask.nii
 
   convert_xfm -omat ${t1w%_t1w}_MNI2PET.mat -inverse ${t1w%_t1w}_PET2MNI.mat
-  flirt -dof 6 -in ${t1w}_brain_outline_r -ref ${pet}_align_mean_fmean -interp nearestneighbour -applyxfm -init ${t1w%_t1w}_MNI2PET.mat -out ${t1w}_brain_outline4pet
+  flirt -dof 6 -in ${t1w}_brain_outline_r -ref ${pet}_align_mean_head -interp nearestneighbour -applyxfm -init ${t1w%_t1w}_MNI2PET.mat -out ${t1w}_brain_outline4pet
 
   #fslmaths ${pet}_mean_stripmask -ero tmpmask
   #fslmaths ${pet}_mean_stripmask -sub tmpmask ${pet}_mean_outline
