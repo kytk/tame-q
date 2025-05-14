@@ -87,7 +87,7 @@ done
 PROCESS_RESULT_1=Process_Status1_$(date +%Y%m%d_%H%M).csv
 echo "tq_10" > ${PROCESS_RESULT_1}
 for flag in ${status_10[@]}; do echo ${flag} >> ${PROCESS_RESULT_1} ; done
-paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_1}
+paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_1} > process_result_tmp.csv && mv process_result_tmp.csv ${PROCESS_RESULT}
 rm ${PROCESS_RESULT_1}
 
 # Step 2. Segmentation
@@ -108,7 +108,7 @@ done
 PROCESS_RESULT_2=Process_Status2_$(date +%Y%m%d_%H%M).csv
 echo "tq_20" > ${PROCESS_RESULT_2}
 for flag in ${status_20[@]}; do echo ${flag} >> ${PROCESS_RESULT_2} ; done
-paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_2}
+paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_2} > process_result_tmp.csv && mv process_result_tmp.csv ${PROCESS_RESULT}
 rm ${PROCESS_RESULT_2}
 
 # Step 3. Semi-Quantification
@@ -131,7 +131,7 @@ done
 PROCESS_RESULT_3=Process_Status3_$(date +%Y%m%d_%H%M).csv
 echo "tq_30" > ${PROCESS_RESULT_3}
 for flag in ${status_30[@]}; do echo ${flag} >> ${PROCESS_RESULT_3} ; done
-paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_3}
+paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_3} > process_result_tmp.csv && mv process_result_tmp.csv ${PROCESS_RESULT}
 rm ${PROCESS_RESULT_3}
 
 # White Matter Reference
@@ -155,7 +155,7 @@ done
 PROCESS_RESULT_4=Process_Status4_$(date +%Y%m%d_%H%M).csv
 echo "tq_31" > ${PROCESS_RESULT_4}
 for flag in ${status_31[@]}; do echo ${flag} >> ${PROCESS_RESULT_4} ; done
-paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_4}
+paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_4} > process_result_tmp.csv && mv process_result_tmp.csv ${PROCESS_RESULT}
 rm ${PROCESS_RESULT_4}
 
 # Step 4. FreeSurfer Segmentation
@@ -182,7 +182,7 @@ done
 PROCESS_RESULT_5=Process_Status5_$(date +%Y%m%d_%H%M).csv
 echo "tq_40" > ${PROCESS_RESULT_5}
 for flag in ${status_40[@]}; do echo ${flag} >> ${PROCESS_RESULT_5} ; done
-paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_5}
+paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_5} > process_result_tmp.csv && mv process_result_tmp.csv ${PROCESS_RESULT}
 rm ${PROCESS_RESULT_5}
 
 ${THAMEQDIR}/src/bash/tq_41_segmentBS.sh
@@ -207,7 +207,7 @@ done
 PROCESS_RESULT_6=Process_Status6_$(date +%Y%m%d_%H%M).csv
 echo "tq_41" > ${PROCESS_RESULT_6}
 for flag in ${status_41[@]}; do echo ${flag} >> ${PROCESS_RESULT_6} ; done
-paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_6}
+paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_6} > process_result_tmp.csv && mv process_result_tmp.csv ${PROCESS_RESULT}
 rm ${PROCESS_RESULT_6}
 
 # Cerebellum Reference
@@ -233,7 +233,7 @@ done
 PROCESS_RESULT_7=Process_Status7_$(date +%Y%m%d_%H%M).csv
 echo "tq_42" > ${PROCESS_RESULT_7}
 for flag in ${status_42[@]}; do echo ${flag} >> ${PROCESS_RESULT_7} ; done
-paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_7}
+paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_7} > process_result_tmp.csv && mv process_result_tmp.csv ${PROCESS_RESULT}
 rm ${PROCESS_RESULT_7}
 
 # Step 5. Get Table Data
