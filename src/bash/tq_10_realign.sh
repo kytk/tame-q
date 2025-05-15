@@ -54,6 +54,8 @@ do
   t1w=${pet/pmpbb3_dyn/t1w} # T1 filename
   ref=${FSLDIR}/data/standard/MNI152_T1_1mm_brain # Template path
   pad=MNI152_T1_1mm_pad # padded images
+
+  echo "Process: ${t1w%_t1w}"
   
   ### Create MNI152_T1_1mm_pad with the same FOV of the T1 image.
   # Calculate the required number of voxels for each side.
@@ -92,7 +94,7 @@ do
   fslsplit ${pet} ${pet}_f
   
   # Calculate a mean image from first two images of PET
-  echo "Calculate a mean image of PET as target"
+  #echo "Calculate a mean image of PET as target"
   #if [[ $(ls | grep ${pet}_f) >2 ]]; then
   #  fslroi ${pet} ${pet}_two 0 2 
   #  fslmaths ${pet}_two -Tmean ${pet}_ref  
@@ -103,7 +105,7 @@ do
   petref=${pet}_f0000
 
   ## PET frames are realigned, averaged, and coregistered to T1W
-  echo "Realign each PET frame to target image"
+  echo "Realign each PET frame to target image\nTarget: ${petref}"
   
   # Set MAXRUNNING
   CPU_LIMIT=$(( $(nproc) - 1 ))
@@ -149,6 +151,7 @@ do
   fslmaths ${pet}_align_mean -thr 0 -bin -fillh -ero ${pet}_align_headmask
   fslmaths ${pet}_align_mean -mas ${pet}_align_headmask ${pet}_align_mean_head
 
+  echo "Coregister the realigned and averaged PET to T1w"
   flirt -dof 6 -in ${pet}_align_mean_head -ref ${t1w}_r -cost normmi -searchcost normmi -omat ${t1w%_t1w}_PET2MNI.mat
   flirt -dof 6 -in ${pet}_align_mean -ref ${t1w}_r -applyxfm -init ${t1w%_t1w}_PET2MNI.mat -out ${pet}_mean
 
