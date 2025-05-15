@@ -99,7 +99,7 @@ def get_qareport_process1(mat_t1w, mat_pet, mat_ref, mode='Mode1'):
         text1='Averaged PET\non T1W'
     if mode=='Mode2':
         figtitle="QA Report (Outline): Coregistration and Realignment"
-        text1='PET and\nT1W Outline'
+        text1='Coregistered\nPET'
 
     fig.text(0.5, 0.93, figtitle, size=18, ha='center', weight='bold')
     fig.text(0.5, 0.9, ID, size=14, ha='center', va='center')
@@ -123,7 +123,7 @@ def get_qareport_process1(mat_t1w, mat_pet, mat_ref, mode='Mode1'):
     ax1.axes.yaxis.set_visible(False)
     
     ax2=fig.add_axes((0.15, 0.61, 0.82, 0.14))
-    fig.text(0.075, 0.68, 'Target image\nfor alignment', ha='center', va='center')
+    fig.text(0.075, 0.68, 'Target image\nfor\nRealignment', ha='center', va='center')
     ax2.imshow(mat_ref, cmap='gray', aspect=l[1]/l[0]).set_clim(np.percentile(mat_ref, 1), np.percentile(mat_ref, 99))
     ax2.axes.xaxis.set_visible(False)
     ax2.axes.yaxis.set_visible(False)
@@ -143,7 +143,7 @@ def get_qareport_process2(fig, mat_ref, mat_dyn_multiple, l, start_num, N_frame,
     axs=[]
     for i, mat_dyn in enumerate(mat_dyn_multiple):
         axs.append(fig.add_axes((0.15, 0.47-0.14*i, 0.82, 0.14)))
-        fig.text(0.075, 0.54-0.14*i, f'Frame\n{start_num+i+1} / {N_frame}', ha='center', va='center')
+        fig.text(0.075, 0.54-0.14*i, f'Realigned\nFrame\n{start_num+i+1} / {N_frame}', ha='center', va='center')
         if mode=='Mode1':
             axs[i].imshow(mat_ref, cmap='gray', aspect=l[1]/l[0]).set_clim(np.percentile(mat_ref, 1), np.percentile(mat_ref, 99))
             axs[i].imshow(mat_dyn, cmap='jet', aspect=l[1]/l[0], alpha=0.4).set_clim(0, mat_ref.max())
@@ -154,7 +154,7 @@ def get_qareport_process2(fig, mat_ref, mat_dyn_multiple, l, start_num, N_frame,
             matrix_outline[:, :, 0]=1.0
             matrix_outline[:, :, 3]=mat_ref
             axs[i].imshow(matrix_outline, aspect=l[1]/l[0], interpolation='nearest').set_clim(0, 1)
-            footer='The target image outline is overlaid on each frame.'
+            footer='Red line: brain surface from T1W image.'
 
         axs[i].axes.xaxis.set_visible(False)
         axs[i].axes.yaxis.set_visible(False)
