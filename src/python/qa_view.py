@@ -96,7 +96,7 @@ def get_qareport_process1(mat_t1w, mat_pet, mat_ref, mode='Mode1'):
     fig=plt.figure(figsize=(8.27, 11.69), dpi=300, facecolor='white')
     if mode=='Mode1':
         figtitle="QA Report (Overlay): Coregistration and Realignment"
-        text1='Averaged PET\non T1W'
+        text1='Coregistered PET\non T1W'
     if mode=='Mode2':
         figtitle="QA Report (Outline): Coregistration and Realignment"
         text1='Coregistered\nPET'
