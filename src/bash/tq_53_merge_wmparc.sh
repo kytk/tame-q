@@ -31,10 +31,10 @@ source ${THAMEQDIR}/config.env
 
 for f in *_wmparc_r.nii.gz
 do
-  echo "Get merged wmparc from ${f} "
+  echo "Get merged wmparc from ${f}"
+  f_merged=${f/wmparc/merged}
 
   # middlefrontal
-  f_merged=${f/wmparc/wmparc_merged}
   fslmaths ${f} -thr 1000 -rem 1000 -thr 27 -uthr 27 -sub 3 -thr 0 tmp4sub
   fslmaths ${f} -sub tmp4sub ${f_merged}
   
@@ -61,9 +61,14 @@ do
   #cingulate(rostralanteriorcingulate)
   fslmaths ${f} -thr 1000 -rem 1000 -thr 26 -uthr 26 -sub 2 -thr 0 tmp4sub
   fslmaths ${f_merged} -sub tmp4sub ${f_merged}
-  
+
+  #merge wmparc and bsseg (Brain-Stem (wmparc) segmented into Midbrain, Pons, and Brainstem (segmentBS))
+  fslmaths ${f} -thr 16 -uthr 16 ${f/wmparc/wmparc_brainstem}  # Extract brainstem (wmparc)
+  fslmaths ${f_merged} -sub ${f/wmparc/wmparc_brainstem} ${f_merged/merged/merged_wobrainstem}  # Remove brainstem from output temporally
+  fslmaths ${f/wmparc/bsseg} -uthr 176 -mas ${f/wmparc/wmparc_brainstem} ${f/wmparc/bsseg_inwmparc}  # Define the segmentation only in wmparc Brain-Stem region
+  fslmaths ${f_merged/merged/merged_wobrainstem} -add ${f/wmparc/bsseg_inwmparc} ${f_merged}  # Add brainstem segmentation into output merged atlas
+
   echo "Save ${f_merged}"
   
   rm tmp4sub.nii.gz
 done
-

@@ -44,7 +44,7 @@ if [[ ! -e ${PWD}/${output_directory}/histogram_parameters.txt ]]; then
   echo -e "ID\tprobability map\tvoxel num\ta1\tb1\tc1\ta2\tb2\tc2\tFWHM_min\tFWHM_max\trefnum\trefval" > ${PWD}/${output_directory}/histogram_parameters.txt
 fi
 
-for f in *_pmpbb3_dyn_mean.nii*
+for f in [A-Z]*_pmpbb3_dyn_mean.nii*
 do
   id=${f%.gz}
   id=${id%_pmpbb3_dyn_mean.nii}
@@ -52,7 +52,7 @@ do
   t1w_r=${id}_t1w_r
   t1w_brain_mask=${id}_t1w_brain_mask
 
-  msk=c1${id}_t1w_r_q
+  msk=c1${id}_t1w_r
   msk_masked=${msk}_masked
   msk_thr=c1${id}_t1w_r_thr
   msk_thr_xero=c1${id}_t1w_r_thr_xero
@@ -62,7 +62,7 @@ do
   echo "Processing ${id} images."
   
   #bet ${t1w} ${t1w_brain} -R -B -f 0.40
-  flirt -dof 6 -in ${t1w_brain_mask} -ref ${t1w_r} -applyxfm -init ${id}_t1w2MNI.mat -out ${t1w_brain_mask}_r
+  #flirt -dof 6 -in ${t1w_brain_mask} -ref ${t1w_r} -applyxfm -init ${id}_t1w2MNI.mat -out ${t1w_brain_mask}_r
   
   #fslmaths ${msk} -mas ${t1w_brain_mask}_r ${msk_masked}
   #fslmaths ${msk_masked} -thr 0.9 ${msk_thr}
@@ -75,7 +75,7 @@ do
   
   # obtain reference value
   MEAN=$(fslstats ${f} -k ${msk_eroded} -M)
-  if [[ $MEAN < 4 ]] ; then
+  if [[ $MEAN < 4 ]]; then
     refval=$(python ${THAMEQDIR}/src/python/get_ref.py ${id} ${f} ${msk_eroded}.nii.gz ${output_directory})
     fslmaths ${f} -div ${refval} ${id}_pmpbb3_suvr
   else

@@ -63,11 +63,11 @@ fi
 rm segmentation.m
 
 # Fill holes in c2 images, and mask out c1 from c2
-for f in c1*_t1w_r.nii; do
-  f=${f#c1}
-  f=${f%.nii}
-  fslmaths c2${f} -thr 0.3 -bin -fillh -binv c2${f}_invmask
-  fslmaths c1${f} -mas c2${f}_invmask c1${f}_q
-done
+#for f in c1*_t1w_r.nii; do
+#  f=${f#c1}
+#  f=${f%.nii}
+#  fslmaths c2${f} -thr 0.3 -bin -fillh -binv c2${f}_invmask
+#  fslmaths c1${f} -mas c2${f}_invmask c1${f}_q
+#done
 
 exit
