@@ -152,7 +152,7 @@ do
   fslmaths ${pet}_align_mean -mas ${pet}_align_headmask ${pet}_align_mean_head
 
   echo "Coregister the realigned and averaged PET to T1w"
-  flirt -dof 6 -in ${pet}_align_mean_head -ref ${t1w}_r -cost normmi -searchcost normmi -omat ${t1w%_t1w}_PET2MNI.mat
+  flirt -dof 6 -in ${pet}_align_mean_head -ref ${t1w}_r -cost mutualinfo -searchcost mutualinfo -omat ${t1w%_t1w}_PET2MNI.mat
   flirt -dof 6 -in ${pet}_align_mean -ref ${t1w}_r -applyxfm -init ${t1w%_t1w}_PET2MNI.mat -out ${pet}_mean
 
   # Calculate mean of realigned PET images and
