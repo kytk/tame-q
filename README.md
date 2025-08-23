@@ -26,6 +26,8 @@ Semi-Quantification is crucial for analyzing PET images. This process often invo
 - To ensure you have the latest updates to the scripts, we kindly ask that you re-clone the repository using git clone.
 
 ## Preparing for THAME-Q Execution
+- THAME-Q accepts NIfTI images as input. If you would like to apply THAME-Q to DICOM images, we recommend converting them with [dcm2niix](https://github.com/rordenlab/dcm2niix). Please note that images converted using other methods have not been validated for compatibility.
+For details on how to use dcm2niix, please refer to the official documentation.
 - THAME-Q identifies the image pairs to process based on file naming conventions. Rename the files you wish to process according to the following rules:
     - T1-weighted image: `ID_t1w.nii.gz`
     - PET image: `ID_pmpbb3_dyn.nii.gz`
