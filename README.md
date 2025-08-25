@@ -20,10 +20,44 @@ Semi-Quantification is crucial for analyzing PET images. This process often invo
 - The following software and libraries must be installed: Python 3 (with Nibabel, Scipy, Matplotlib, and Numpy), FSL (version 6.0.5.2 or later), FreeSurfer (version 7.3.2 or later), and SPM (preferably standalone version).
 - The recommended setup involves running Lin4Neuro on VirtualBox, but the scripts can also run on individual environments where the above software is installed. In such cases, please ensure to appropriately modify the path of config.env to match your environment.
 
-## Recommended Environment Setup
-- Install VirtualBox and download Lin4Neuro 22.04 optimized for THAME-Q from [nemotos.net](https://www.nemotos.net/?page_id=29). Refer to nemotos.net for detailed instructions about L4N installation.
-- THAME-Q repository is already available under /home/user/git in this environment.
-- To ensure you have the latest updates to the scripts, we kindly ask that you re-clone the repository using git clone.
+## THAME-Q Virtual Environments
+To run **THAME-Q**, we provide a customized virtual environment based on **Lin4Neuro (Ubuntu 22.04)** optimized for THAME-Q.  
+It is distributed in two formats:
+1. **OVA file** for use with VirtualBox  
+2. **Docker container**
+
+### Common Setup Steps
+- On your host machine, create a folder named **`share`**.  
+  This will be configured later as the shared folder between the host and the virtual environment.  
+- THAME-Q requires **FreeSurfer**.  
+  Please place your FreeSurfer license file (**`license.txt`**) inside the shared folder.
+
+### (1) OVA File for VirtualBox
+1. Install VirtualBox
+2. Download the OVA file from the provided link and import it into **VirtualBox**.  
+3. After importing Lin4Neuro, adjust the **memory size** and **number of processors** according to your system resources.  
+4. For general usage of Lin4Neuro, please refer to [nemotos.net](http://nemotos.net).  
+5. From within the virtual environment, copy the license file to the correct location:
+   ```bash
+   cp /media/sf_share/license.txt $FS_LICENSE
+
+### (2) Docker Container
+1. From a terminal (Linux/macOS) or PowerShell (Windows), move to the **`share`** folder.
+2. Run the following command to start the container:
+   ```bash
+   docker run \
+   --shm-size=8g \
+   --privileged \
+   --platform linux/amd64 \
+   -d -p 6080:6080 \
+   -v .:/home/brain/share \
+   kytk/thame-q:latest
+
+3. Once the container is running, open your web browser and access: http://localhost:6080/vnc.html
+4. From within the virtual environment, copy the license file to the correct location:
+   ```bash
+   cp /home/brain/share/license.txt $FS_LICENSE
+
 
 ## Preparing for THAME-Q Execution
 - THAME-Q accepts NIfTI images as input. If you would like to apply THAME-Q to DICOM images, we recommend converting them with [dcm2niix](https://github.com/rordenlab/dcm2niix). Please note that images converted using other methods have not been validated for compatibility.
