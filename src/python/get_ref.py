@@ -355,7 +355,7 @@ if __name__ == '__main__':
   g2=get_gaussian(a2, b2, c2)
   
   # Monomodal Curve Fitting if necessary
-  if g1(b1)<g2(b2)*histcutoff:
+  if b2 < x[-1] and g1(b1)<g2(b2)*histcutoff:
     am, bm, cm=monomodal_curve_fitting(x, y)
     gm=get_gaussian(am, bm, cm)
     dsc=calc_dsc(x, y, gm)
