@@ -3,8 +3,8 @@
 #set -x
 
 # Load environment variable
-THAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; pwd)
-source ${THAMEQDIR}/config.env
+TAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; pwd)
+source ${TAMEQDIR}/config.env
 
 # Check license.txt
 if [[ ! -e ${FS_LICENSE} ]]; then 
@@ -13,7 +13,7 @@ if [[ ! -e ${FS_LICENSE} ]]; then
   exit
 fi
 
-echo "THAME-Q Pipeline"
+echo "TAME-Q Pipeline"
 IDs=()
 subjlist="T1\tPET\n"
 for f in [A-Z]*_t1w.nii*; do
@@ -55,14 +55,14 @@ while true; do
     esac
 done
 
-### Start THAME-Q Preprocess
+### Start TAME-Q Preprocess
 timestamp=$(date +%Y%m%d_%H%M)
 PROCESS_RESULT=Process_Status_${timestamp}.csv
 echo "ID" > ${PROCESS_RESULT}
 for ID in ${IDs[@]}; do echo ${ID} >> ${PROCESS_RESULT}; done
 
 # Step 1. Realignment and Coregistration
-${THAMEQDIR}/src/bash/tq_10_realign.sh
+${TAMEQDIR}/src/bash/tq_10_realign.sh
 status_10=()
 for ID in ${IDs[@]}; do
 Rmax=$(cat coregistration_results_pet.csv | grep ${ID}, | awk -F , '{print $2}' | sed 's/^-//g')
@@ -91,7 +91,7 @@ paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_1} > process_result_tmp.csv && m
 rm ${PROCESS_RESULT_1}
 
 # Step 2. Segmentation
-${THAMEQDIR}/src/bash/tq_20_segmentation.sh
+${TAMEQDIR}/src/bash/tq_20_segmentation.sh
 status_20=()
 for ID in ${IDs[@]}; do
   if [[ -e c1${ID}_t1w_r.nii ]] && [[ -e c2${ID}_t1w_r.nii ]]; then
@@ -113,7 +113,7 @@ rm ${PROCESS_RESULT_2}
 
 # Step 3. Semi-Quantification
 # Gray Matter Reference
-${THAMEQDIR}/src/bash/tq_30_suvr_im.sh
+${TAMEQDIR}/src/bash/tq_30_suvr_im.sh
 status_30=()
 for ID in ${IDs[@]}; do
   if [[ -e ${ID}_pmpbb3_suvr.nii.gz ]]; then
@@ -135,7 +135,7 @@ paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_3} > process_result_tmp.csv && m
 rm ${PROCESS_RESULT_3}
 
 # White Matter Reference
-${THAMEQDIR}/src/bash/tq_31_suvr_wm.sh
+${TAMEQDIR}/src/bash/tq_31_suvr_wm.sh
 status_31=()
 for ID in ${IDs[@]}; do
   if [[ -e ${ID}_pmpbb3_suvr_wm.nii.gz ]]; then
@@ -159,7 +159,7 @@ paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_4} > process_result_tmp.csv && m
 rm ${PROCESS_RESULT_4}
 
 # Step 4. FreeSurfer Segmentation
-${THAMEQDIR}/src/bash/tq_40_recon-all.sh
+${TAMEQDIR}/src/bash/tq_40_recon-all.sh
 
 status_40=()
 for ID in ${IDs[@]}; do
@@ -185,7 +185,7 @@ for flag in ${status_40[@]}; do echo ${flag} >> ${PROCESS_RESULT_5} ; done
 paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_5} > process_result_tmp.csv && mv process_result_tmp.csv ${PROCESS_RESULT}
 rm ${PROCESS_RESULT_5}
 
-${THAMEQDIR}/src/bash/tq_41_segmentBS.sh
+${TAMEQDIR}/src/bash/tq_41_segmentBS.sh
 status_41=()
 for ID in ${IDs[@]}; do
   if [[ $(find subjects/${ID}/mri -name "brainstemSsLabels*mgz" | wc -l) > 0 ]]; then
@@ -211,7 +211,7 @@ paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_6} > process_result_tmp.csv && m
 rm ${PROCESS_RESULT_6}
 
 # Cerebellum Reference
-${THAMEQDIR}/src/bash/tq_42_suvr_cer.sh
+${TAMEQDIR}/src/bash/tq_42_suvr_cer.sh
 status_42=()
 for ID in ${IDs[@]}; do
   if [[ -e ${ID}_pmpbb3_suvr_cer.nii.gz ]]; then
@@ -237,16 +237,16 @@ paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_7} > process_result_tmp.csv && m
 rm ${PROCESS_RESULT_7}
 
 # Step 5. Get Table Data
-${THAMEQDIR}/src/bash/tq_50_gen_table_wmparc_gm.sh
-${THAMEQDIR}/src/bash/tq_51_gen_table_wmparc_wm.sh
-${THAMEQDIR}/src/bash/tq_52_gen_table_wmparc_cer.sh
-${THAMEQDIR}/src/bash/tq_53_merge_wmparc.sh
-${THAMEQDIR}/src/bash/tq_54_gen_table_merged_gm.sh
-${THAMEQDIR}/src/bash/tq_55_gen_table_merged_wm.sh
-${THAMEQDIR}/src/bash/tq_56_gen_table_merged_cer.sh
+${TAMEQDIR}/src/bash/tq_50_gen_table_wmparc_gm.sh
+${TAMEQDIR}/src/bash/tq_51_gen_table_wmparc_wm.sh
+${TAMEQDIR}/src/bash/tq_52_gen_table_wmparc_cer.sh
+${TAMEQDIR}/src/bash/tq_53_merge_wmparc.sh
+${TAMEQDIR}/src/bash/tq_54_gen_table_merged_gm.sh
+${TAMEQDIR}/src/bash/tq_55_gen_table_merged_wm.sh
+${TAMEQDIR}/src/bash/tq_56_gen_table_merged_cer.sh
 
 # Step 6. Get Overview
 for ID in ${IDs[@]}; do
-  ${THAMEQDIR}/src/bash/tq_60_overview_axi.sh -i ${ID} -a 1 -b 2
-  ${THAMEQDIR}/src/bash/tq_61_overview_cor.sh -i ${ID} -a 1 -b 2
+  ${TAMEQDIR}/src/bash/tq_60_overview_axi.sh -i ${ID} -a 1 -b 2
+  ${TAMEQDIR}/src/bash/tq_61_overview_cor.sh -i ${ID} -a 1 -b 2
 done
