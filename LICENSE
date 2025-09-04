@@ -1,7 +1,7 @@
-THAME-Q License
+TAME-Q License
 ===============
 
-This software, THAME-Q, is an open-source project licensed under the GNU General Public License version 3.0 (GPLv3). By using this software, you agree to the terms of the GPLv3. A full copy of the GPLv3 license is included below.
+This software, TAME-Q, is an open-source project licensed under the GNU General Public License version 3.0 (GPLv3). By using this software, you agree to the terms of the GPLv3. A full copy of the GPLv3 license is included below.
 
 The project makes use of third-party software and libraries, each with its own license. Details of these third-party components and their respective licenses are provided under the "Third-Party Software Licenses" section.
 
@@ -231,7 +231,7 @@ The GNU General Public License does not permit incorporating your program into p
 Third-Party Software Licenses
 =============================
 
-THAME-Q depends on the following external software and libraries. Each is subject to its own license terms as described below. By using THAME-Q, you also agree to comply with the licenses of these third-party components.
+TAME-Q depends on the following external software and libraries. Each is subject to its own license terms as described below. By using TAME-Q, you also agree to comply with the licenses of these third-party components.
 
 1. FMRIB Software Library (FSL)
    - License: FSL License  
@@ -251,7 +251,7 @@ THAME-Q depends on the following external software and libraries. Each is subjec
 
 ### Python Libraries
 
-The following Python libraries are used in THAME-Q. Please refer to their respective licenses for detailed terms:
+The following Python libraries are used in TAME-Q. Please refer to their respective licenses for detailed terms:
 
 1. nibabel
    - License: MIT License  
@@ -269,4 +269,4 @@ The following Python libraries are used in THAME-Q. Please refer to their respec
    - License: BSD License
    - Details: https://github.com/scipy/scipy/blob/main/LICENSE.txt
 
-For further questions or to report any issues, please contact the maintainers of THAME-Q.
+For further questions or to report any issues, please contact the maintainers of TAME-Q.
