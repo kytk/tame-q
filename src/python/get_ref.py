@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-### THAME-Q get_ref.py
+### TAME-Q get_ref.py
 ### Objectives:
-# This script is part of the THAME-Q pipeline and is responsible for determining data-driven reference values 
+# This script is part of the TAME-Q pipeline and is responsible for determining data-driven reference values 
 # through curve fitting based on signals within gray/white matter regions.
 
 ### Prerequisites:
