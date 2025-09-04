@@ -40,7 +40,7 @@ if [[ ${#IDs[@]} > 1 ]]; then
 elif [[ ${#IDs[@]} = 1 ]]; then
   echo -e "The below ID is detected:\n\n${subjlist}" | expand -t ${#g}
 else
-  echo -e "No IDs are found.\nPlease check the image locations and filenames you would like to process."
+  echo -e "No IDs were found.\nFilenames must follow these rules:\n- Start with an ID that begins with an uppercase letter.\n- Use the suffix _t1w.nii.gz for T1-weighted images.\n- Use the suffix _pmpbb3_dyn.nii.gz for PET images.\nExamples:\n- ID001_t1w.nii.gz\n- ID001_pmpbb3_dyn.nii.gz- Please check the image locations and filenames you want to process.\n"
   exit
 fi
 
