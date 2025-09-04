@@ -1,6 +1,6 @@
 #!/bin/bash
 
-### THAME-Q tq_51_gen_table_wmparc_wm.sh
+### TAME-Q tq_51_gen_table_wmparc_wm.sh
 ### Objectives:
 # This script generates a table of SUVR values for each ROI in wmparc based on semi-quantification using the white matter reference.
 
@@ -29,8 +29,8 @@
 #set -x
 
 # Load environment variable
-THAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
-source ${THAMEQDIR}/config.env
+TAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
+source ${TAMEQDIR}/config.env
 export SUBJECTS_DIR=$PWD/subjects
 
 for f in *_pmpbb3_suvr_wm.nii.gz
