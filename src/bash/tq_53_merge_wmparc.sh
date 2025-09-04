@@ -1,6 +1,6 @@
 #!/bin/bash
 
-### THAME-Q tq_53_merge_wmparc.sh
+### TAME-Q tq_53_merge_wmparc.sh
 ### Objectives:
 # This script creates a merged atlas, `wmparc_merged`, by combining smaller cortical areas in the wmparc into anatomically unified regions.
 # This merging is intended to increase the sampling size for each ROI, contributing to more stable SUVR values across ROIs.
@@ -26,8 +26,8 @@
 #set -x
 
 # Load environment variable
-THAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
-source ${THAMEQDIR}/config.env
+TAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
+source ${TAMEQDIR}/config.env
 
 for f in *_wmparc_r.nii.gz
 do
