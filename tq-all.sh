@@ -8,9 +8,18 @@ source ${TAMEQDIR}/config.env
 
 # Check license.txt
 if [[ ! -e ${FS_LICENSE} ]]; then 
-  echo "license.txt is not found."
-  echo "Place FreeSurfer license.txt at ${FS_LICENSE}"
-  exit
+  echo "${FS_LICENSE} is not found."
+  while true; do
+    echo "Enter the path to FreeSurfer license.txt"
+    read answer
+	if [[ -e $answer ]]; then
+      echo "Detected: $answer"
+	  export FS_LICENSE=${answer}
+	  break
+    else
+      echo "${answer} is not found."
+    fi
+  done
 fi
 
 echo "TAME-Q Pipeline"
