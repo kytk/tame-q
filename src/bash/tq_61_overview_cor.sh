@@ -11,8 +11,8 @@
 #set -x
 
 # Load environment variable
-THAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
-source ${THAMEQDIR}/config.env
+TAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
+source ${TAMEQDIR}/config.env
 
 while getopts "i:a:b:" OPT; do
   case $OPT in
@@ -48,7 +48,7 @@ else
 fi
  
 echo "Overlay SUVR image onto T1w image"
-python ${THAMEQDIR}/src/python/overlay_view_cor.py ${ID} ${t1w_l} ${pet_l} ${THR} ${UTHR} ${ID}_overview_cor_t1.png ${ID}_overview_cor_${THR}_${UTHR}.png
+python ${TAMEQDIR}/src/python/overlay_view_cor.py ${ID} ${t1w_l} ${pet_l} ${THR} ${UTHR} ${ID}_overview_cor_t1.png ${ID}_overview_cor_${THR}_${UTHR}.png
 # rm ${t1w_l} ${pet_l}
 
 exit
