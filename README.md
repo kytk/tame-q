@@ -1,7 +1,7 @@
 # README
 
 ## Background
-Semi-Quantification is crucial for analyzing PET images. This process often involves multiple complex steps and tools. THAME-Q aims to streamline these processes into a single, efficient workflow.
+Semi-Quantification is crucial for analyzing PET images. This process often involves multiple complex steps and tools. TAME-Q aims to streamline these processes into a single, efficient workflow.
 
 ## Overview
 <img width="8000" height="4500" alt="Image" src="https://github.com/user-attachments/assets/28b01865-35a0-4ebe-b7d3-0b54ed76d113" />
@@ -20,8 +20,8 @@ Semi-Quantification is crucial for analyzing PET images. This process often invo
 - The following software and libraries must be installed: Python 3 (with Nibabel, Scipy, Matplotlib, and Numpy), FSL (version 6.0.5.2 or later), FreeSurfer (version 7.3.2 or later), and SPM (preferably standalone version).
 - The recommended setup involves running Lin4Neuro on VirtualBox, but the scripts can also run on individual environments where the above software is installed. In such cases, please ensure to appropriately modify the path of config.env to match your environment.
 
-## THAME-Q Virtual Environments
-To run **THAME-Q**, we provide a customized virtual environment based on **Lin4Neuro (Ubuntu 22.04)** optimized for THAME-Q.  
+## TAME-Q Virtual Environments
+To run **TAME-Q**, we provide a customized virtual environment based on **Lin4Neuro (Ubuntu 22.04)** optimized for TAME-Q.  
 It is distributed in two formats:
 1. **OVA file** for use with VirtualBox  
 2. **Docker container**
@@ -29,7 +29,7 @@ It is distributed in two formats:
 ### Common Setup Steps
 - On your host machine, create a folder named **`share`**.  
   This will be configured later as the shared folder between the host and the virtual environment.  
-- THAME-Q requires **FreeSurfer**.  
+- TAME-Q requires **FreeSurfer**.  
   Please place your FreeSurfer license file (**`license.txt`**) inside the shared folder.
 
 ### (1) OVA File for VirtualBox
@@ -51,7 +51,7 @@ It is distributed in two formats:
    --platform linux/amd64 \
    -d -p 6080:6080 \
    -v .:/home/brain/share \
-   kytk/thame-q:latest
+   kytk/tame-q:latest
 
 3. Once the container is running, open your web browser and access: http://localhost:6080/vnc.html
 4. From within the virtual environment, copy the license file to the correct location:
@@ -59,19 +59,19 @@ It is distributed in two formats:
    cp /home/brain/share/license.txt $FS_LICENSE
 
 
-## Preparing for THAME-Q Execution
-- THAME-Q accepts NIfTI images as input. If you would like to apply THAME-Q to DICOM images, we recommend converting them with [dcm2niix](https://github.com/rordenlab/dcm2niix). Please note that images converted using other methods have not been validated for compatibility.
+## Preparing for TAME-Q Execution
+- TAME-Q accepts NIfTI images as input. If you would like to apply TAME-Q to DICOM images, we recommend converting them with [dcm2niix](https://github.com/rordenlab/dcm2niix). Please note that images converted using other methods have not been validated for compatibility.
 For details on how to use dcm2niix, please refer to the official documentation.
-- THAME-Q identifies the image pairs to process based on file naming conventions. Rename the files you wish to process according to the following rules:
+- TAME-Q identifies the image pairs to process based on file naming conventions. Rename the files you wish to process according to the following rules:
     - T1-weighted image: `ID_t1w.nii.gz`
     - PET image: `ID_pmpbb3_dyn.nii.gz`
   Here, `ID` can be any unique string that identifies the image pair, but the first character must be uppercase.
     - Example: If the `ID` is `CON_001`:
         - T1-weighted image: `CON_001_t1w.nii.gz`
         - PET image: `CON_001_pmpbb3_dyn.nii.gz`
-  As THAME-Q is primarily developed for analyzing PM-PBB3 PET data, the filename suffix is currently fixed as `pmpbb3_dyn`. Even for images acquired using other tracers, this naming convention should be followed. However, plans are in place to make filename recognition more flexible in the future.
+  As TAME-Q is primarily developed for analyzing PM-PBB3 PET data, the filename suffix is currently fixed as `pmpbb3_dyn`. Even for images acquired using other tracers, this naming convention should be followed. However, plans are in place to make filename recognition more flexible in the future.
 
-## Running THAME-Q
+## Running TAME-Q
 - Navigate to the directory containing the prepared files and run the following command:
 
     ```bash
