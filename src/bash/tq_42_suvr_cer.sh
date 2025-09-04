@@ -1,6 +1,6 @@
 #!/bin/bash
 
-### THAME-Q tq_42_suvr_cer.sh
+### TAME-Q tq_42_suvr_cer.sh
 ### Objectives:
 # This script performs semi-quantification of static PET images using cerebellum reference, generating SUVR images.
 
@@ -28,8 +28,8 @@
 #set -x
 
 # Load environment variable
-THAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
-source ${THAMEQDIR}/config.env
+TAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
+source ${TAMEQDIR}/config.env
 export SUBJECTS_DIR=$PWD/subjects
 
 for f in *_pmpbb3_dyn_mean.nii
