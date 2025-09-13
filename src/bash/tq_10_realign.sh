@@ -105,7 +105,7 @@ do
   petref=${pet}_f0000
 
   ## PET frames are realigned, averaged, and coregistered to T1W
-  echo "Realign each PET frame to target image\nTarget: ${petref}"
+  echo -e "Realign each PET frame to target image\nTarget: ${petref}"
   
   # Set MAXRUNNING
   CPU_LIMIT=$(( $(nproc) - 1 ))
