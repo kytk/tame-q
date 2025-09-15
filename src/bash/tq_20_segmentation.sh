@@ -1,6 +1,6 @@
 #!/bin/bash
 
-### THAME-Q tq_20_segmentation.sh
+### TAME-Q tq_20_segmentation.sh
 ### Objectives:
 # This script generates probability maps for gray matter and white matter from T1-weighted images.
 
@@ -27,17 +27,17 @@
 #set -x
 
 # Load environment variable
-THAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
-source ${THAMEQDIR}/config.env
+TAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
+source ${TAMEQDIR}/config.env
 
 # Prevent error
-if [[ "${THAMEQDIR}" = $PWD ]] ; then
+if [[ "${TAMEQDIR}" = $PWD ]] ; then
   echo "Don't run this script in this directory"
   exit 1
 fi
 
 # Copy .m file to pwd
-cp ${THAMEQDIR}/src/matlab/segmentation.m $PWD
+cp ${TAMEQDIR}/src/matlab/segmentation.m $PWD
 
 # Get MCR version
 MCRVER=$(cat ${SPM12STANDALONEDIR}/readme.txt | grep run_spm12.sh | grep /mathworks/home/application | awk -F/ '{print $NF}')

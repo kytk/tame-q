@@ -1,6 +1,6 @@
 #!/bin/bash
 
-### THAME-Q tq_10_realign.sh
+### TAME-Q tq_10_realign.sh
 ### Objectives:
 # This script is designed to realign MRI (T1-weighted) and dynamic PET images to a standard brain template (MNI152).
 # The process includes brain extraction, rigid body transformation, and realignment of individual PET frames.
@@ -31,8 +31,8 @@
 FSLOUTPUTTYPE=NIFTI
 
 # Load environment variable
-THAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
-source ${THAMEQDIR}/config.env
+TAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
+source ${TAMEQDIR}/config.env
 
 # Create a basis for coregistration QC
 QCT1W=./coregistration_results_t1w.csv
@@ -105,7 +105,7 @@ do
   petref=${pet}_f0000
 
   ## PET frames are realigned, averaged, and coregistered to T1W
-  echo "Realign each PET frame to target image\nTarget: ${petref}"
+  echo -e "Realign each PET frame to target image\nTarget: ${petref}"
   
   # Set MAXRUNNING
   CPU_LIMIT=$(( $(nproc) - 1 ))
@@ -184,7 +184,7 @@ do
   #fslmaths ${petref}_stripmask -sub tmpmask ${petref}_outline
   #rm tmpmask.nii
 
-  ${THAMEQDIR}/src/python/qa_view.py ${t1w%_t1w} ${t1w}_r.nii ${pet}_mean.nii ${pet}_align.nii ${petref}.nii
+  ${TAMEQDIR}/src/python/qa_view.py ${t1w%_t1w} ${t1w}_r.nii ${pet}_mean.nii ${pet}_align.nii ${petref}.nii
 
   # Delete temporary files
   #rm -f ${t1w}_o.nii

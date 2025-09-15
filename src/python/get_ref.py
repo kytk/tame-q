@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-### THAME-Q get_ref.py
+### TAME-Q get_ref.py
 ### Objectives:
-# This script is part of the THAME-Q pipeline and is responsible for determining data-driven reference values 
+# This script is part of the TAME-Q pipeline and is responsible for determining data-driven reference values 
 # through curve fitting based on signals within gray/white matter regions.
 
 ### Prerequisites:
@@ -152,7 +152,7 @@ def bimodal_curve_fitting(x, y, params, param_bounds):
   return popt
   
 def monomodal_curve_fitting(x, y):
-  popt_mono, pcov_mono=curve_fit(func_mono, x, y, p0=[np.max(y), x[np.argmax(y)], 0.5])
+  popt_mono, pcov_mono=curve_fit(func_mono, x, y, p0=[np.max(y), x[np.argmax(y)], 0.5], bounds=[[0, x[0], 0], [np.inf, x[-1], np.inf]])
   return popt_mono
 
 def save_figure(x, y, a1, b1, c1, a2, b2, c2, am, bm, cm, dsc, refnum, refval, dsc_thr, ID, output_directory):
@@ -355,7 +355,7 @@ if __name__ == '__main__':
   g2=get_gaussian(a2, b2, c2)
   
   # Monomodal Curve Fitting if necessary
-  if g1(b1)<g2(b2)*histcutoff:
+  if b2 < x[-1] and g1(b1)<g2(b2)*histcutoff:
     am, bm, cm=monomodal_curve_fitting(x, y)
     gm=get_gaussian(am, bm, cm)
     dsc=calc_dsc(x, y, gm)

@@ -1,6 +1,6 @@
 #!/bin/bash
 
-### THAME-Q tq_52_gen_table_wmparc_cer.sh
+### TAME-Q tq_52_gen_table_wmparc_cer.sh
 ### Objectives:
 # This script generates a table of SUVR values for each ROI in wmparc based on semi-quantification using the cerebellum cortex reference
 
@@ -29,8 +29,8 @@
 #set -x
 
 # Load environment variable
-THAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
-source ${THAMEQDIR}/config.env
+TAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
+source ${TAMEQDIR}/config.env
 export SUBJECTS_DIR=$PWD/subjects
 
 for f in *_pmpbb3_dyn_mean.nii

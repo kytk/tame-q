@@ -1,6 +1,6 @@
 #!/bin/bash
 
-### THAME-Q tq_30_suvr_im.sh
+### TAME-Q tq_30_suvr_im.sh
 ### Objectives:
 # This script performs semi-quantification of static PET images using bi-modal curve fitting based on gray matter signals, generating SUVR images.
 
@@ -31,8 +31,8 @@
 #set -x
 
 # Load environment variable
-THAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
-source ${THAMEQDIR}/config.env
+TAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
+source ${TAMEQDIR}/config.env
 
 echo "Calculate SUVR images."
 
@@ -76,12 +76,12 @@ do
   # obtain reference value
   MEAN=$(fslstats ${f} -k ${msk_eroded} -M)
   if [[ $MEAN < 4 ]]; then
-    refval=$(python ${THAMEQDIR}/src/python/get_ref.py ${id} ${f} ${msk_eroded}.nii.gz ${output_directory})
+    refval=$(python ${TAMEQDIR}/src/python/get_ref.py ${id} ${f} ${msk_eroded}.nii.gz ${output_directory})
     fslmaths ${f} -div ${refval} ${id}_pmpbb3_suvr
   else
     # modulate excessive signal distribution as the MEAN == 2.
     fslmaths ${f} -div $(echo "scale=5; $MEAN/2" | bc) ${id}_pmpbb3_dyn_mean_mod.nii.gz
-    refval=$(python ${THAMEQDIR}/src/python/get_ref.py ${id} ${id}_pmpbb3_dyn_mean_mod.nii.gz ${msk_eroded}.nii.gz ${output_directory})
+    refval=$(python ${TAMEQDIR}/src/python/get_ref.py ${id} ${id}_pmpbb3_dyn_mean_mod.nii.gz ${msk_eroded}.nii.gz ${output_directory})
     fslmaths ${id}_pmpbb3_dyn_mean_mod.nii.gz -div ${refval} ${id}_pmpbb3_suvr
   fi
   
