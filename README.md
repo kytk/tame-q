@@ -17,14 +17,14 @@ Semi-Quantification is crucial for analyzing PET images. This process often invo
     6. Calculation of SUVR values for each region and creation of summary tables
 
 ## System Requirements
-- The following software and libraries must be installed: Python 3 (with Nibabel, Scipy, Matplotlib, and Numpy), FSL (version 6.0.5.2 or later), FreeSurfer (version 7.3.2 or later), and SPM (preferably standalone version).
-- The recommended setup involves running Lin4Neuro on VirtualBox, but the scripts can also run on individual environments where the above software is installed. In such cases, please ensure to appropriately modify the path of config.env to match your environment.
+- The following software and libraries must be installed: Python 3 (with Nibabel, Scipy, Matplotlib, and Numpy), FSL (version 6.0.5.2 or later), FreeSurfer (version 7.4.1), and SPM (preferably standalone version).
+- The recommended setup involves running Lin4Neuro on Docker or VirtualBox, but the scripts can also run on individual environments where the above software is installed. In such cases, please ensure to appropriately modify the path of config.env to match your environment.
 
 ## TAME-Q Virtual Environments
 To run **TAME-Q**, we provide a customized virtual environment based on **Lin4Neuro (Ubuntu 22.04)** optimized for TAME-Q.  
 It is distributed in two formats:
-1. **OVA file** for use with VirtualBox  
-2. **Docker container**
+1. **Docker container**
+2. **OVA file** for use with VirtualBox  
 
 ### Common Setup Steps
 - On your host machine, create a folder named **`share`**.  
@@ -32,7 +32,20 @@ It is distributed in two formats:
 - TAME-Q requires **FreeSurfer**.  
   Please place your FreeSurfer license file (**`license.txt`**) inside the shared folder.
 
-### (1) OVA File for VirtualBox
+### (1) Docker Container
+1. From a terminal (Linux/macOS) or PowerShell (Windows), move to the **`share`** folder.
+2. (a) If you prefer CUI virtual environment, run the following command to start the container:
+   ```bash
+   docker run -it --rm -e MODE=bash -v .:/home/brain/share tame-q:latest
+   ```
+
+   (b) If you perfer GUI virtual environment, run the following command:
+   ```bash
+   docker run -d -p 6080:6080 -v .:/home/brain/share tame-q:latest
+   ```
+   Once the container is running, open your web browser and access: http://localhost:6080/vnc.html
+
+### (2) OVA File for VirtualBox
 1. Install VirtualBox
 2. Download the OVA file from the provided link and import it into **VirtualBox**.  
 3. After importing Lin4Neuro, adjust the **memory size** and **number of processors** according to your system resources.  
@@ -40,24 +53,6 @@ It is distributed in two formats:
 5. From within the virtual environment, copy the license file to the correct location:
    ```bash
    cp /media/sf_share/license.txt $FS_LICENSE
-
-### (2) Docker Container
-1. From a terminal (Linux/macOS) or PowerShell (Windows), move to the **`share`** folder.
-2. Run the following command to start the container:
-   ```bash
-   docker run \
-   --shm-size=8g \
-   --privileged \
-   --platform linux/amd64 \
-   -d -p 6080:6080 \
-   -v .:/home/brain/share \
-   kytk/tame-q:latest
-
-3. Once the container is running, open your web browser and access: http://localhost:6080/vnc.html
-4. From within the virtual environment, copy the license file to the correct location:
-   ```bash
-   cp /home/brain/share/license.txt $FS_LICENSE
-
 
 ## Preparing for TAME-Q Execution
 - TAME-Q accepts NIfTI images as input. If you would like to apply TAME-Q to DICOM images, we recommend converting them with [dcm2niix](https://github.com/rordenlab/dcm2niix). Please note that images converted using other methods have not been validated for compatibility.
@@ -69,7 +64,7 @@ For details on how to use dcm2niix, please refer to the official documentation.
     - Example: If the `ID` is `CON_001`:
         - T1-weighted image: `CON_001_t1w.nii.gz`
         - PET image: `CON_001_pmpbb3_dyn.nii.gz`
-  As TAME-Q is primarily developed for analyzing PM-PBB3 PET data, the filename suffix is currently fixed as `pmpbb3_dyn`. Even for images acquired using other tracers, this naming convention should be followed. However, plans are in place to make filename recognition more flexible in the future.
+  As TAME-Q is primarily developed for analyzing PM-PBB3 PET data, the filename suffix is currently fixed as `pmpbb3_dyn`. Even for images acquired using other tracers, this naming convention should be followed. However, it is planed to make filename recognition more flexible in the future.
 
 ## Running TAME-Q
 - Navigate to the directory containing the prepared files and run the following command:
