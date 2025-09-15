@@ -72,8 +72,27 @@ For details on how to use dcm2niix, please refer to the official documentation.
     ```bash
     tq-all.sh
     ```
-
 - A list of recognized images will be displayed. If the list is correct, type `y`. This will initiate preprocessing, semi-quantification, and table generation for the processed data.
+- Example: Assume that your data is stored in the share folder as follows:
+    ```
+    share
+    ├── data
+    │   ├── ID001_pmpbb3_dyn.nii.gz
+    │   ├── ID001_t1w.nii.gz
+    │   ├── ID002_pmpbb3_dyn.nii.gz
+    │   ├── ID002_t1w.nii.gz
+    │   ├── ID003_pmpbb3_dyn.nii.gz
+    │   └── ID003_t1w.nii.gz
+    └── license.txt
+    ```
+    You can run thame-q as follows:
+    ```bash
+    cd /home/brain/share/data
+    tq-all.sh
+    ```
+
+
+
 
 ## License
 This project is licensed under the GNU General Public License v3.0. See the LICENSE file for details.
