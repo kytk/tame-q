@@ -35,7 +35,7 @@ mat_t1w=tiling(img_t1w[:, :, START:START+INTERVAL*(X*Y):INTERVAL])
 mat_pet=tiling(img_pet[:, :, START:START+INTERVAL*(X*Y):INTERVAL])
 
 # T1W images
-fig=plt.figure(figsize=(8.27, 11.69), dpi=300, facecolor='white')
+fig=plt.figure(figsize=(8.27, 11.69), dpi=600, facecolor='white')
 ax=fig.add_axes((0.03, 0.13, 0.94, 0.8))
 ax.imshow(mat_t1w, cmap='gray')
 
@@ -46,7 +46,7 @@ fig.text(0.6, 0.09, ID, size=20)
 fig.savefig(out_t1)
 
 # PMPBB3 images on T1W images
-fig=plt.figure(figsize=(8.27, 11.69), dpi=300, facecolor='white')
+fig=plt.figure(figsize=(8.27, 11.69), dpi=600, facecolor='white')
 ax=fig.add_axes((0.03, 0.13, 0.94, 0.8))
 ax.imshow(mat_t1w, cmap='gray')
 msk=ax.imshow(mat_pet, cmap='jet', alpha=0.4)
