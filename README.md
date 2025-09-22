@@ -30,7 +30,7 @@ It is distributed in two formats:
 - On your host machine, create a folder named **`share`**.  
   This will be configured later as the shared folder between the host and the virtual environment.  
 - TAME-Q requires **FreeSurfer**.  
-  Please place your FreeSurfer license file (**`license.txt`**) inside the shared folder.
+  Please place your FreeSurfer license file (**`license.txt`**) directly under the **`share`** folder.
 
 ### (1) Docker Container
 1. From a terminal (Linux/macOS) or PowerShell (Windows), move to the **`share`** folder.
@@ -43,14 +43,16 @@ It is distributed in two formats:
    ```bash
    docker run -d -p 6080:6080 -v .:/home/brain/share tame-q:latest
    ```
-   Once the container is running, open your web browser and access: http://localhost:6080/vnc.html
+   Once the container is running, open your web browser and access: http://localhost:6080/vnc.html (Login username: “brain”, password: “lin4neuro”)
+   In the Docker version of L4N, the **`share`** folder configured on the host machine is mounted as /home/brain/share inside the container.
 
 ### (2) OVA File for VirtualBox
 1. Install VirtualBox
 2. Download the OVA file from the provided link and import it into **VirtualBox**.  
 3. After importing Lin4Neuro, adjust the **memory size** and **number of processors** according to your system resources.  
-4. For general usage of Lin4Neuro, please refer to [nemotos.net](http://nemotos.net).  
-5. From within the virtual environment, copy the license file to the correct location:
+4. For general usage of Lin4Neuro, please refer to [nemotos.net](http://nemotos.net).
+5. Boot "L4N-2204-TAME-Q" virtual environment (Login username: “brain”, password: “lin4neuro”).
+6. Open a terminal and command the below to copy the license file to the correct location:
    ```bash
    cp /media/sf_share/license.txt $FS_LICENSE
 
@@ -68,7 +70,6 @@ For details on how to use dcm2niix, please refer to the official documentation.
 
 ## Running TAME-Q
 - Navigate to the directory containing the prepared files and run the following command:
-
     ```bash
     tq-all.sh
     ```
@@ -85,14 +86,16 @@ For details on how to use dcm2niix, please refer to the official documentation.
     │   └── ID003_t1w.nii.gz
     └── license.txt
     ```
-    You can run thame-q as follows:
+    You can run tame-q as follows:
     ```bash
     cd /home/brain/share/data
     tq-all.sh
     ```
-
-
-
+- We provide sample data for testing (located in /home/brain/Sample). In a virtual environment, you can run the following to test with the sample data:
+    ```bash
+    cd /home/brain/Sample
+    tq-all.sh
+    ```
 
 ## License
 This project is licensed under the GNU General Public License v3.0. See the LICENSE file for details.
