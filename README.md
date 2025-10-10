@@ -106,3 +106,7 @@ It is distributed in two formats:
 
 ## License
 This project is licensed under the GNU General Public License v3.0. See the LICENSE file for details.
+
+## Citation
+Nakayama K, Nemoto K, Endo H, et al. TAME-Q: An open-source preprocessing pipeline for reproducible semi-quantification of florzolotau (18F) PET. medRxiv. Published online October 9, 2025:2025.10.08.25337562. doi:10.1101/2025.10.08.25337562  
+
