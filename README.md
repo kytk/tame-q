@@ -58,7 +58,7 @@ It is distributed in two formats:
 3. Download the OVA file from [the link](https://www.dropbox.com/t/M1QYlvykHu6lPAyF) (MD5 sum: `8f3a60167843fa7d29ac630bb2351e4b`).
 4. Import the OVA file into VirtualBox.
 5. After importing Lin4Neuro, adjust the **memory size** and **number of processors** according to your system resources.
-6. Set the `**share**` directory on your host machine as a shared folder so that it can be accessed from the virtual environment.
+6. Set the **`share`** directory on your host machine as a shared folder so that it can be accessed from the virtual environment.
 7. Boot "L4N-2204-TAME-Q" virtual environment (login: **brain**, password: **lin4neuro**).
 8. Open a terminal and run the following command to copy the license file to the correct location:
    ```bash
