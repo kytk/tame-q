@@ -42,12 +42,12 @@ It is distributed in two formats:
 2. From a terminal (Linux/macOS) or PowerShell (Windows), move to the **`share`** folder.
 3. (a) If you prefer a CLI virtual environment, run the following command to start the container:
    ```bash
-   docker run -it --rm -e MODE=bash -v .:/home/brain/share tame-q:latest
+   docker run -it --rm -e MODE=bash -v .:/home/brain/share kytk/tame-q:latest
    ```
 
    (b) If you prefer a GUI virtual environment, run the following command:
    ```bash
-   docker run -d -p 6080:6080 -v .:/home/brain/share tame-q:latest
+   docker run -d -p 6080:6080 -v .:/home/brain/share kytk/tame-q:latest
    ```
    Once the container is running, open your web browser and go to http://localhost:6080/vnc.html (login: **brain**, password: **lin4neuro**)
    In the Docker version of L4N, the **`share`** folder configured on the host machine is mounted as /home/brain/share inside the container.
@@ -57,12 +57,14 @@ It is distributed in two formats:
 2. Install **VirtualBox**.
 3. Download the OVA file from [the link](https://www.dropbox.com/t/M1QYlvykHu6lPAyF) (MD5 sum: `8f3a60167843fa7d29ac630bb2351e4b`).
 4. Import the OVA file into VirtualBox.
-5. After importing Lin4Neuro, adjust the **memory size** and **number of processors** according to your system resources.  
-6. For general usage of Lin4Neuro, please refer to [nemotos.net](http://nemotos.net).
+5. After importing Lin4Neuro, adjust the **memory size** and **number of processors** according to your system resources.
+6. Set the `**share**` directory on your host machine as a shared folder so that it can be accessed from the virtual environment.
 7. Boot "L4N-2204-TAME-Q" virtual environment (login: **brain**, password: **lin4neuro**).
 8. Open a terminal and run the following command to copy the license file to the correct location:
    ```bash
    cp -n /media/sf_share/license.txt $FS_LICENSE
+9. In the VirtualBox version of L4N, the **`share`** folder configured on the host machine is mounted as `/media/sf_share`.
+10. For general usage of Lin4Neuro, please refer to [nemotos.net](http://nemotos.net).
 
 ## Preparing for TAME-Q Execution
 - TAME-Q accepts NIfTI images as input. If you would like to apply TAME-Q to DICOM images, we recommend converting them with [dcm2niix](https://github.com/rordenlab/dcm2niix). Please note that images converted using other methods have not been validated for compatibility. For details on how to use dcm2niix, please refer to the official documentation.
