@@ -103,6 +103,7 @@ do
   #  petref=${pet}_f0000
   #fi
   petref=${pet}_f0000
+  fslreorient2std ${pet}_f0000 ${pet}_f0000
 
   ## PET frames are realigned, averaged, and coregistered to T1W
   echo -e "Realign each PET frame to target image\nTarget: ${petref}"
@@ -137,10 +138,18 @@ do
 
   wait
   
-  for t_align in ${pet}_f*_align.mat; do
+  #for t_align in ${pet}_f*_align.mat; do
+  #  Rf="${Rf} $(avscale --allparams ${t_align} | grep 'Rotation Angles' | awk -F '= ' '{print $2}')"
+  #done
+  for t_align in $(find . -maxdepth 1 -name "${pet}_f*_align.mat"); do
     Rf="${Rf} $(avscale --allparams ${t_align} | grep 'Rotation Angles' | awk -F '= ' '{print $2}')"
   done
-  Rmaxf=$(for v in $Rf; do echo $v; done | sort -nr | head -n1)
+  
+  if [[ -n "$Rf" ]]; then
+    Rmaxf=$(for v in $Rf; do echo $v; done | sort -nr | head -n1)
+  else
+    Rmaxf=0
+  fi
 
   # Merge realigned frames and mean them
   echo "Merge realigned frames"
