@@ -92,6 +92,9 @@ do
   ## Split PET frames as ${pet}_f????.nii
   echo "Split PET frames"
   fslsplit ${pet} ${pet}_f
+  for frame in ${pet}_f*.nii; do
+    fslreorient2std $frame $frame
+  done  
   
   # Calculate a mean image from first two images of PET
   #echo "Calculate a mean image of PET as target"
@@ -103,7 +106,6 @@ do
   #  petref=${pet}_f0000
   #fi
   petref=${pet}_f0000
-  fslreorient2std ${pet}_f0000 ${pet}_f0000
 
   ## PET frames are realigned, averaged, and coregistered to T1W
   echo -e "Realign each PET frame to target image\nTarget: ${petref}"
