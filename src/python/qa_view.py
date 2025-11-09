@@ -177,7 +177,7 @@ if __name__=="__main__":
     img_pet=nib.load(pet_mean).get_fdata()
     img_dyn=nib.load(pet_dyn).get_fdata()
     if len(img_dyn.shape)==3:
-        img_dun=img_dyn.reshape(list(img_dyn.shape)+[1])
+        img_dyn=img_dyn.reshape(list(img_dyn.shape)+[1])
     img_dyn=np.pad(img_dyn, pad_width=((1, 1), (1, 1), (1, 1), (0, 0)), mode='constant')
     img_ref=np.pad(nib.load(pet_ref).get_fdata(), pad_width=((1, 1), (1, 1), (1, 1)), mode='constant')
 
