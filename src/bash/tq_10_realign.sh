@@ -141,6 +141,7 @@ do
   #for t_align in ${pet}_f*_align.mat; do
   #  Rf="${Rf} $(avscale --allparams ${t_align} | grep 'Rotation Angles' | awk -F '= ' '{print $2}')"
   #done
+  Rf=""
   for t_align in $(find . -maxdepth 1 -name "${pet}_f*_align.mat"); do
     Rf="${Rf} $(avscale --allparams ${t_align} | grep 'Rotation Angles' | awk -F '= ' '{print $2}')"
   done
