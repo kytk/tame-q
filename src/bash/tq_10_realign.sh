@@ -173,7 +173,7 @@ do
   pixdim2=$(fslval ${pet}_mean pixdim2)
   pixdim3=$(fslval ${pet}_mean pixdim3)
   voxsize=$(echo "scale=3;$pixdim1 * $pixdim2 * $pixdim3" | bc)
-  fslmaths ${pet}_mean -div $voxsize -div 1000 ${pet}_mean
+  #fslmaths ${pet}_mean -div $voxsize -div 1000 ${pet}_mean
   
   mri_synthstrip -i ${pet}_mean.nii -m ${pet}_mean_stripmask.nii.gz
   DICE_PET=$(calc_dice ${t1w}_brain_mask_r.nii ${pet}_mean_stripmask.nii.gz)
