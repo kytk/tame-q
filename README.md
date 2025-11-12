@@ -67,6 +67,12 @@ It is distributed in two formats:
 10. For general usage of Lin4Neuro, please refer to [nemotos.net](http://nemotos.net).
 
 ## Preparing for TAME-Q Execution
+- At first, it is preferable to update TAME-Q by the below commands:
+  ```bash
+  cd ~/git
+  rm -rf tame-q
+  git clone https://github.com/kytk/tame-q.git
+  ```
 - TAME-Q accepts NIfTI images as input. If you would like to apply TAME-Q to DICOM images, we recommend converting them with [dcm2niix](https://github.com/rordenlab/dcm2niix). Please note that images converted using other methods have not been validated for compatibility. For details on how to use dcm2niix, please refer to the official documentation.
 - TAME-Q identifies the image pairs to process based on file naming conventions. Rename the files you wish to process according to the following rules:
     - T1-weighted image: `ID_t1w.nii.gz`
