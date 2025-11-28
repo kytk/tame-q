@@ -163,69 +163,73 @@ def get_qareport_process2(fig, mat_ref, mat_dyn_multiple, l, start_num, N_frame,
         
     return fig
 
-ID=sys.argv[1]
-t1w=sys.argv[2]
-pet_mean=sys.argv[3]
-pet_dyn=sys.argv[4]
-pet_ref=sys.argv[5]
+if __name__=="__main__":
+    ID=sys.argv[1]
+    t1w=sys.argv[2]
+    pet_mean=sys.argv[3]
+    pet_dyn=sys.argv[4]
+    pet_ref=sys.argv[5]
 
-# Load Data
-img_t1w=nib.load(t1w).get_fdata()
-img_t1w_outline=nib.load(ID+'_t1w_brain_outline_r.nii').get_fdata()
-img_t1w_outline4pet=nib.load(ID+'_t1w_brain_outline4pet.nii').get_fdata()
-img_pet=nib.load(pet_mean).get_fdata()
-img_dyn=np.pad(nib.load(pet_dyn).get_fdata(), pad_width=((1, 1), (1, 1), (1, 1), (0, 0)), mode='constant')
-img_ref=np.pad(nib.load(pet_ref).get_fdata(), pad_width=((1, 1), (1, 1), (1, 1)), mode='constant')
+    # Load Data
+    img_t1w=nib.load(t1w).get_fdata()
+    img_t1w_outline=nib.load(ID+'_t1w_brain_outline_r.nii').get_fdata()
+    img_t1w_outline4pet=nib.load(ID+'_t1w_brain_outline4pet.nii').get_fdata()
+    img_pet=nib.load(pet_mean).get_fdata()
+    img_dyn=nib.load(pet_dyn).get_fdata()
+    if len(img_dyn.shape)==3:
+        img_dyn=img_dyn.reshape(list(img_dyn.shape)+[1])
+    img_dyn=np.pad(img_dyn, pad_width=((1, 1), (1, 1), (1, 1), (0, 0)), mode='constant')
+    img_ref=np.pad(nib.load(pet_ref).get_fdata(), pad_width=((1, 1), (1, 1), (1, 1)), mode='constant')
 
-# Determine FOV
-head_pet=nib.load(pet_mean).header
-fov=head_pet['pixdim'][1:4]*head_pet['dim'][1:4]
+    # Determine FOV
+    head_pet=nib.load(pet_mean).header
+    fov=head_pet['pixdim'][1:4]*head_pet['dim'][1:4]
 
-l=nib.load(pet_ref).header['pixdim'][1:4]
-size=(fov//l).astype('int16')
+    l=nib.load(pet_ref).header['pixdim'][1:4]
+    size=(fov//l).astype('int16')
 
-xaxis_sum=img_ref.sum(axis=1).sum(axis=1)
-yaxis_sum=img_ref.sum(axis=2).sum(axis=0)
-zaxis_sum=img_ref.sum(axis=0).sum(axis=0)
+    xaxis_sum=img_ref.sum(axis=1).sum(axis=1)
+    yaxis_sum=img_ref.sum(axis=2).sum(axis=0)
+    zaxis_sum=img_ref.sum(axis=0).sum(axis=0)
 
-Gx=np.average(np.arange(xaxis_sum.size), weights=xaxis_sum)
-Gy=np.average(np.arange(yaxis_sum.size), weights=yaxis_sum)
-Gz=np.average(np.arange(zaxis_sum.size), weights=zaxis_sum)
+    Gx=np.average(np.arange(xaxis_sum.size), weights=xaxis_sum)
+    Gy=np.average(np.arange(yaxis_sum.size), weights=yaxis_sum)
+    Gz=np.average(np.arange(zaxis_sum.size), weights=zaxis_sum)
 
-# Crop images within FOV
-img_ref=img_ref[max(int(Gx-size[0]/2), 0):min(int(Gx+size[0]/2), int(img_ref.shape[0]-1)),
-                max(int(Gy-size[1]/2), 0):min(int(Gy+size[1]/2), int(img_ref.shape[1]-1)),
-                max(int(Gz-size[2]/2), 0):min(int(Gz+size[2]/2), int(img_ref.shape[2]-1))]
-img_t1w_outline4pet=img_t1w_outline4pet[max(int(Gx-size[0]/2), 0):min(int(Gx+size[0]/2), int(img_t1w_outline4pet.shape[0]-1)),
-                max(int(Gy-size[1]/2), 0):min(int(Gy+size[1]/2), int(img_t1w_outline4pet.shape[1]-1)),
-                max(int(Gz-size[2]/2), 0):min(int(Gz+size[2]/2), int(img_t1w_outline4pet.shape[2]-1))]
-img_dyn=img_dyn[max(int(Gx-size[0]/2), 0):min(int(Gx+size[0]/2), int(img_dyn.shape[0]-1)),
-                max(int(Gy-size[1]/2), 0):min(int(Gy+size[1]/2), int(img_dyn.shape[1]-1)),
-                max(int(Gz-size[2]/2), 0):min(int(Gz+size[2]/2), int(img_dyn.shape[2]-1)), :]
+    # Crop images within FOV
+    img_ref=img_ref[max(int(Gx-size[0]/2), 0):min(int(Gx+size[0]/2), int(img_ref.shape[0]-1)),
+                    max(int(Gy-size[1]/2), 0):min(int(Gy+size[1]/2), int(img_ref.shape[1]-1)),
+                    max(int(Gz-size[2]/2), 0):min(int(Gz+size[2]/2), int(img_ref.shape[2]-1))]
+    img_t1w_outline4pet=img_t1w_outline4pet[max(int(Gx-size[0]/2), 0):min(int(Gx+size[0]/2), int(img_t1w_outline4pet.shape[0]-1)),
+                    max(int(Gy-size[1]/2), 0):min(int(Gy+size[1]/2), int(img_t1w_outline4pet.shape[1]-1)),
+                    max(int(Gz-size[2]/2), 0):min(int(Gz+size[2]/2), int(img_t1w_outline4pet.shape[2]-1))]
+    img_dyn=img_dyn[max(int(Gx-size[0]/2), 0):min(int(Gx+size[0]/2), int(img_dyn.shape[0]-1)),
+                    max(int(Gy-size[1]/2), 0):min(int(Gy+size[1]/2), int(img_dyn.shape[1]-1)),
+                    max(int(Gz-size[2]/2), 0):min(int(Gz+size[2]/2), int(img_dyn.shape[2]-1)), :]
 
-# Image to Matrix
-mat_t1w, mat_pet, mat_t1w_outline=get_mat_t1w_pet(img_t1w, img_pet, img_t1w_outline)
-mat_ref, mat_ref_outline, idxes=get_mat_ref(img_ref, img_t1w_outline4pet, l)
+    # Image to Matrix
+    mat_t1w, mat_pet, mat_t1w_outline=get_mat_t1w_pet(img_t1w, img_pet, img_t1w_outline)
+    mat_ref, mat_ref_outline, idxes=get_mat_ref(img_ref, img_t1w_outline4pet, l)
 
-# Create Summary
-for i in range((img_dyn.shape[3]-1)//4+1):
-    # QA Report
-    fig1=get_qareport_process1(mat_t1w, mat_pet, mat_ref)
-    mat_dyn_multiple=get_mat_dyn_multiple(img_dyn, idxes, l, 4*i)
-    fig2=get_qareport_process2(fig1, mat_ref, mat_dyn_multiple, l, 4*i, img_dyn.shape[3])
-    fig2.savefig(f'{ID}_qareport_{i+1}.png')
-    fig1.clear()
-    fig2.clear()
-    plt.close(fig1)
-    plt.close(fig2)
+    # Create Summary
+    for i in range((img_dyn.shape[3]-1)//4+1):
+        # QA Report
+        fig1=get_qareport_process1(mat_t1w, mat_pet, mat_ref)
+        mat_dyn_multiple=get_mat_dyn_multiple(img_dyn, idxes, l, 4*i)
+        fig2=get_qareport_process2(fig1, mat_ref, mat_dyn_multiple, l, 4*i, img_dyn.shape[3])
+        fig2.savefig(f'{ID}_qareport_{i+1}.png')
+        fig1.clear()
+        fig2.clear()
+        plt.close(fig1)
+        plt.close(fig2)
 
-    # QA Report (outline)
-    fig1=get_qareport_process1(mat_t1w_outline, mat_pet, mat_ref, mode='Mode2')
-    fig2=get_qareport_process2(fig1, mat_ref_outline, mat_dyn_multiple, l, 4*i, img_dyn.shape[3], mode='Mode2')
-    fig2.savefig(f'{ID}_qaoutline_{i+1}.png')
-    fig1.clear()
-    fig2.clear()
-    plt.close(fig1)
-    plt.close(fig2)
+        # QA Report (outline)
+        fig1=get_qareport_process1(mat_t1w_outline, mat_pet, mat_ref, mode='Mode2')
+        fig2=get_qareport_process2(fig1, mat_ref_outline, mat_dyn_multiple, l, 4*i, img_dyn.shape[3], mode='Mode2')
+        fig2.savefig(f'{ID}_qaoutline_{i+1}.png')
+        fig1.clear()
+        fig2.clear()
+        plt.close(fig1)
+        plt.close(fig2)
 
-exit()
+    exit()

@@ -92,6 +92,9 @@ do
   ## Split PET frames as ${pet}_f????.nii
   echo "Split PET frames"
   fslsplit ${pet} ${pet}_f
+  for frame in ${pet}_f*.nii; do
+    fslreorient2std $frame $frame
+  done  
   
   # Calculate a mean image from first two images of PET
   #echo "Calculate a mean image of PET as target"
@@ -137,10 +140,19 @@ do
 
   wait
   
-  for t_align in ${pet}_f*_align.mat; do
+  #for t_align in ${pet}_f*_align.mat; do
+  #  Rf="${Rf} $(avscale --allparams ${t_align} | grep 'Rotation Angles' | awk -F '= ' '{print $2}')"
+  #done
+  Rf=""
+  for t_align in $(find . -maxdepth 1 -name "${pet}_f*_align.mat"); do
     Rf="${Rf} $(avscale --allparams ${t_align} | grep 'Rotation Angles' | awk -F '= ' '{print $2}')"
   done
-  Rmaxf=$(for v in $Rf; do echo $v; done | sort -nr | head -n1)
+  
+  if [[ -n "$Rf" ]]; then
+    Rmaxf=$(for v in $Rf; do echo $v; done | sort -nr | head -n1)
+  else
+    Rmaxf=0
+  fi
 
   # Merge realigned frames and mean them
   echo "Merge realigned frames"
@@ -161,7 +173,7 @@ do
   pixdim2=$(fslval ${pet}_mean pixdim2)
   pixdim3=$(fslval ${pet}_mean pixdim3)
   voxsize=$(echo "scale=3;$pixdim1 * $pixdim2 * $pixdim3" | bc)
-  fslmaths ${pet}_mean -div $voxsize -div 1000 ${pet}_mean
+  #fslmaths ${pet}_mean -div $voxsize -div 1000 ${pet}_mean
   
   mri_synthstrip -i ${pet}_mean.nii -m ${pet}_mean_stripmask.nii.gz
   DICE_PET=$(calc_dice ${t1w}_brain_mask_r.nii ${pet}_mean_stripmask.nii.gz)

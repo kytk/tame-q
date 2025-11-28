@@ -86,6 +86,11 @@ do
     fsid=${f%_t1w_r.nii*}
     if [ ! -e ${SUBJECTS_DIR}/${fsid}/mri/brainstemSsLabels.v??.FSvoxelSpace.mgz ]; then
       segmentBS.sh ${fsid} ${SUBJECTS_DIR}
+
+      # ERROR Handling
+      if [ ! -e ${SUBJECTS_DIR}/${fsid}/mri/brainstemSsLabels.v??.FSvoxelSpace.mgz ]; then
+        segment_subregions brainstem --cross ${fsid}
+      fi
     else
       echo "brainstem segmentation is already done."
     fi

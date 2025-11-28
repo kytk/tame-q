@@ -28,7 +28,8 @@ subjlist="T1\tPET\n"
 for f in [A-Z]*_t1w.nii*; do
   id=${f%.gz}
   id=${id%_t1w.nii}
-  g=${id}_pmpbb3_dyn.nii.gz
+  #g=${id}_pmpbb3_dyn.nii.gz
+  g=$(find . -maxdepth 1 -name "${id}_pmpbb3_dyn.nii*" | head -n 1)
   if [[ -e  ${g} ]]; then
     IDs+=("${id}")
     subjlist="${subjlist}${f}\t${g}\n"

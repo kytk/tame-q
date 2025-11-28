@@ -28,7 +28,7 @@ Semi-quantification is crucial for analyzing PET images. This process often invo
 ## TAME-Q Virtual Environments
 To run **TAME-Q**, we provide an optimized virtual environment based on **Lin4Neuro (Ubuntu 22.04)**.  
 It is distributed in two formats:
-1. **Docker container**
+1. **Docker Image**
 2. **OVA file** for use with VirtualBox  
 
 ### Common Setup Steps
@@ -37,19 +37,14 @@ It is distributed in two formats:
 - TAME-Q requires a **FreeSurfer** license.
   Please place your FreeSurfer license file (**`license.txt`**) directly under the **`share`** folder.
 
-### (1) Docker Container
-1. Complete the common setup steps.
+### (1) Docker Image
+1. Complete the above common setup steps.
 2. From a terminal (Linux/macOS) or PowerShell (Windows), move to the **`share`** folder.
-3. (a) If you prefer a CLI virtual environment, run the following command to start the container:
+3. Run the following command:
    ```bash
-   docker run -it --rm -e MODE=bash -v .:/home/brain/share kytk/tame-q:latest
+   docker run --privileged --platform linux/amd64 --shm-size 2g -d -p 6080:6080 -v .:/home/brain/share kytk/tame-q:latest
    ```
-
-   (b) If you prefer a GUI virtual environment, run the following command:
-   ```bash
-   docker run -d -p 6080:6080 -v .:/home/brain/share kytk/tame-q:latest
-   ```
-   Once the container is running, open your web browser and go to http://localhost:6080/vnc.html (login: **brain**, password: **lin4neuro**)
+   Once the container is running, open your web browser and go to http://localhost:6080/vnc.html (password: **lin4neuro**)
    In the Docker version of L4N, the **`share`** folder configured on the host machine is mounted as /home/brain/share inside the container.
 
 ### (2) OVA File for VirtualBox
@@ -67,6 +62,12 @@ It is distributed in two formats:
 10. For general usage of Lin4Neuro, please refer to [nemotos.net](http://nemotos.net).
 
 ## Preparing for TAME-Q Execution
+- At first, it is preferable to update TAME-Q by the below commands:
+  ```bash
+  cd ~/git
+  rm -rf tame-q
+  git clone https://github.com/kytk/tame-q.git
+  ```
 - TAME-Q accepts NIfTI images as input. If you would like to apply TAME-Q to DICOM images, we recommend converting them with [dcm2niix](https://github.com/rordenlab/dcm2niix). Please note that images converted using other methods have not been validated for compatibility. For details on how to use dcm2niix, please refer to the official documentation.
 - TAME-Q identifies the image pairs to process based on file naming conventions. Rename the files you wish to process according to the following rules:
     - T1-weighted image: `ID_t1w.nii.gz`
