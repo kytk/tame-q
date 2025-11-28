@@ -51,7 +51,11 @@ do
   bsseg=${fsid}_bsseg
   if [[ ! -e ${bsseg}_r.nii.gz ]]; then
     echo "copy brainstemSsLabels.v??.FSvoxelSpace.mgz, add fsid, and convert to nii.gz"
-    find $PWD/subjects/${fsid} -name 'brainstemSsLabels.v??.FSvoxelSpace.mgz' -exec cp {} ${bsseg}.mgz \;
+    if [[ $(find $PWD/subjects/${fsid} -name 'brainstemSsLabels.v??.FSvoxelSpace.mgz' | wc -l) > 0 ]]; then
+      find $PWD/subjects/${fsid} -name 'brainstemSsLabels.v??.FSvoxelSpace.mgz' -exec cp {} ${bsseg}.mgz \;
+    elif [[ $(find $PWD/subjects/${fsid} -name 'brainstemSsLabels.FSvoxelSpace.mgz' | wc -l) > 0 ]]; then
+      find $PWD/subjects/${fsid} -name 'brainstemSsLabels.FSvoxelSpace.mgz' -exec cp {} ${bsseg}.mgz \;
+    fi
     mri_label2vol --seg ${bsseg}.mgz --temp $f --o ${bsseg}_r.mgz --regheader ${bsseg}.mgz
     mri_convert ${bsseg}_r.{mgz,nii.gz} --out_orientation $(mri_info $f | grep Orientation | awk '{ print $3 }')
     rm *.mgz
