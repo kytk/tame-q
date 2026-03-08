@@ -2,4 +2,6 @@
 
 TAMEQDIR=$(cd $(dirname $(realpath $0)); cd ../../ ; pwd)
 cat ${TAMEQDIR}/lib/tameqlogo.txt
+echo
+
 exit 0
