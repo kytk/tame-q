@@ -1,25 +1,28 @@
-%% tau_2_segmentation.m
-% batch script for preprocessing of t1w images
-
-% K.Nemoto 27 Feb 2023
+%% segmentation.m
+% Template script for preprocessing of t1w image in tame-q
+% 8 Mar 2026 K.Nakayama and K.Nemoto
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-%Filter for Volume files
-%Please change this according to your image files
-volfil='^[A-Z].*t1w_r.nii';
+% Please replace the below MR_IMAGE_PATH
+% with your file you want to do segmentation
+% (Be careful not to erase the suffix ',1')
+% Example:
+%    A t1w image is saved as /home/user/data/t1w.nii, then:
+%    img='/home/user/data/t1w.nii,1'
+
+img='MR_IMAGE_PATH,1';
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
 %% Select Image files
 % please change the filter
-imglist=spm_select('FPList',pwd,volfil);
-t1vols = cellstr(imglist);
+t1vols = cellstr(img);
 
 %% Step 1
 %% Initialize batch
 spm_jobman('initcfg');
 matlabbatch = {};
 
-display('Segmentation, DARTEL normalization, and TIV calculation');
+display('Segmentation');
 %% Segmentation
 matlabbatch{1}.spm.spatial.preproc.channel.vols = t1vols;
 matlabbatch{1}.spm.spatial.preproc.channel.biasreg = 0.001;
@@ -46,3 +49,4 @@ matlabbatch{1}.spm.spatial.preproc.warp.write = [0 0];
 matlabbatch{1}.spm.spatial.preproc.warp.vox = NaN;
 matlabbatch{1}.spm.spatial.preproc.warp.bb = [NaN NaN NaN
                                               NaN NaN NaN];
+
