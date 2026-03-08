@@ -1,7 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import sys
+# 8 Mar 2026 K.Nakayama and K.Nemoto
+
+import sys, os
 import numpy as np
 import nibabel as nib
 import matplotlib.pyplot as plt
@@ -169,11 +171,14 @@ if __name__=="__main__":
     pet_mean=sys.argv[3]
     pet_dyn=sys.argv[4]
     pet_ref=sys.argv[5]
+    edge=sys.argv[6]
+    edge4pet=sys.argv[7]
+    outdir=sys.argv[8]
 
     # Load Data
     img_t1w=nib.load(t1w).get_fdata()
-    img_t1w_outline=nib.load(ID+'_t1w_brain_outline_r.nii').get_fdata()
-    img_t1w_outline4pet=nib.load(ID+'_t1w_brain_outline4pet.nii').get_fdata()
+    img_t1w_outline=nib.load(edge).get_fdata()
+    img_t1w_outline4pet=nib.load(edge4pet).get_fdata()
     img_pet=nib.load(pet_mean).get_fdata()
     img_dyn=nib.load(pet_dyn).get_fdata()
     if len(img_dyn.shape)==3:
@@ -217,7 +222,7 @@ if __name__=="__main__":
         fig1=get_qareport_process1(mat_t1w, mat_pet, mat_ref)
         mat_dyn_multiple=get_mat_dyn_multiple(img_dyn, idxes, l, 4*i)
         fig2=get_qareport_process2(fig1, mat_ref, mat_dyn_multiple, l, 4*i, img_dyn.shape[3])
-        fig2.savefig(f'{ID}_qareport_{i+1}.png')
+        fig2.savefig(os.path.join(outdir, f'QAreport_{i+1}.png'))
         fig1.clear()
         fig2.clear()
         plt.close(fig1)
@@ -226,10 +231,11 @@ if __name__=="__main__":
         # QA Report (outline)
         fig1=get_qareport_process1(mat_t1w_outline, mat_pet, mat_ref, mode='Mode2')
         fig2=get_qareport_process2(fig1, mat_ref_outline, mat_dyn_multiple, l, 4*i, img_dyn.shape[3], mode='Mode2')
-        fig2.savefig(f'{ID}_qaoutline_{i+1}.png')
+        fig2.savefig(os.path.join(outdir, f'QAoutline_{i+1}.png'))
         fig1.clear()
         fig2.clear()
         plt.close(fig1)
         plt.close(fig2)
 
     exit()
+

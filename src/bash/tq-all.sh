@@ -1,262 +1,211 @@
-#!/bin/bash
+#!/usr/bin/env bash
+# 8 Mar 2026 K.Nakayama and K.Nemoto
 
-#set -x
-
-# Load environment variable
-TAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; pwd)
-source ${TAMEQDIR}/config.env
-
-# Check license.txt
-if [[ ! -e ${FS_LICENSE} ]]; then 
-  echo "${FS_LICENSE} is not found."
-  while true; do
-    echo "Enter the path to FreeSurfer license.txt"
-    read answer
-	if [[ -e $answer ]]; then
-      echo "Detected: $answer"
-	  export FS_LICENSE=${answer}
-	  break
-    else
-      echo "${answer} is not found."
+set -euo pipefail
+for arg in "$@"; do
+    if [[ "${arg}" = "--debug" ]]; then
+        set -x
     fi
-  done
-fi
-
-echo "TAME-Q Pipeline"
-IDs=()
-subjlist="T1\tPET\n"
-for f in [A-Z]*_t1w.nii*; do
-  id=${f%.gz}
-  id=${id%_t1w.nii}
-  #g=${id}_pmpbb3_dyn.nii.gz
-  g=$(find . -maxdepth 1 -name "${id}_pmpbb3_dyn.nii*" | head -n 1)
-  if [[ -e  ${g} ]]; then
-    IDs+=("${id}")
-    subjlist="${subjlist}${f}\t${g}\n"
-  fi
 done
 
-if [[ ${#IDs[@]} > 1 ]]; then
-  echo -e "The below ${#IDs[@]} IDs are detected:\n\n${subjlist}" | expand -t ${#g}
-elif [[ ${#IDs[@]} = 1 ]]; then
-  echo -e "The below ID is detected:\n\n${subjlist}" | expand -t ${#g}
-else
-  echo -e "No IDs were found.\nFilenames must follow these rules:\n- Start with an ID that begins with an uppercase letter.\n- Use the suffix _t1w.nii.gz for T1-weighted images.\n- Use the suffix _pmpbb3_dyn.nii.gz for PET images.\nExamples:\n- ID001_t1w.nii.gz\n- ID001_pmpbb3_dyn.nii.gz- Please check the image locations and filenames you want to process.\n"
-  exit
+# Load environment variable
+TAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
+source ${TAMEQDIR}/config.env
+
+# If images are not given, command tq-batch.sh instead.
+flag_mri_option="false"
+flag_pet_option="false"
+for arg in "$@"; do
+    if [[ "${arg}" = "--mri" ]]; then
+        flag_mri_option="true"
+    elif [[ "${arg}" = "--pet" ]]; then
+        flag_pet_option="true"
+    fi
+done
+if [[ "${flag_mri_option}" = "false" ]] && [[ "${flag_pet_option}" = "false" ]]; then
+    echo "tq-all.sh calls tq-batch.sh ..."
+    ${TAMEQDIR}/src/bash/tq-batch.sh "$@"
+    exit 0
 fi
 
-while true; do
-    echo "Is the list correct? [y/n]"
+### Define functions
+cleanup() {
+    status=$?
+    if [[ "${status}" -eq 0 ]] && [[ "${cache}" = false ]]; then
+        rm -f ${subjectdir}/tq-all_tmp*.nii.gz
+        rm -f mri_view.nii.gz
+        rm -f ${subjectdir}/pet_suvr_?m_view.nii.gz
+        rm -f pet_f????.nii.gz
+        rm -f pet_f????_align.nii.gz
+    fi
+    jobs -pr | xargs -r kill 2>/dev/null || true
+}
 
-    read answer
+trap cleanup EXIT INT TERM
 
-    case $answer in
-	[Yy]*)
-		echo -e "Continue processing \n"
-		break
-		;;
-	[Nn]*)
-		echo -e "Quit to process \n"
-		exit
-		;;
-	*)
-		echo -e "Type y or n \n"
-		;;
+function display_usage() {
+    echo "Usage: $0 --id <id> --mri <mri_input> --pet <pet_input> [options]"
+    echo "Options:"
+    echo "  --id <id>"
+    echo "  --mri <mri_input>"
+    echo "  --pet <pet_input>"
+    echo "  --outdir <dirpath>"
+    echo "  --set <settingfile>"
+    echo "  --cache"
+    echo "  --debug"
+}
+
+function check_existence() {
+    for f in "$@"; do
+        if [[ ! -e ${f} ]]; then
+            echo "Error: Unable to find ${f}" >&2
+            exit 1
+        fi
+    done
+}
+
+### Read command line arguments
+# Handle necessary arguments
+id=""
+inmri=""
+inpet=""
+refpolicy=${TAMEQDIR}/src/python/reference_policy.py
+settingfile=${TAMEQDIR}/env/tq-all-setting.env
+outdir=$(pwd)
+cache=false
+debug_option=""
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --id) id="$2"; shift 2 ;;
+        --mri) inmri="$2"; shift 2 ;;
+        --pet) inpet="$2"; shift 2 ;;
+        --set) settingfile="$2"; shift 2 ;;
+        --refpolicy) refpolicy="$2"; shift 2 ;;
+        --outdir) outdir="${2%/}"; shift 2 ;;
+        --cache) cache=true; shift 1 ;;
+        --debug) debug_option="--debug"; shift 1 ;;
+        --*) echo "Unknown option: $1"; display_usage ; exit 1 ;;
+        *) echo "Unknow option: $1"; display_usage ; exit 1 ;;
     esac
 done
 
-### Start TAME-Q Preprocess
-timestamp=$(date +%Y%m%d_%H%M)
-PROCESS_RESULT=Process_Status_${timestamp}.csv
-echo "ID" > ${PROCESS_RESULT}
-for ID in ${IDs[@]}; do echo ${ID} >> ${PROCESS_RESULT}; done
+if [[ -z "${inmri}" ]] || [[ -z "${inpet}" ]]; then
+    display_usage
+    exit 1
+fi
 
-# Step 1. Realignment and Coregistration
-${TAMEQDIR}/src/bash/tq_10_realign.sh
-status_10=()
-for ID in ${IDs[@]}; do
-Rmax=$(cat coregistration_results_pet.csv | grep ${ID}, | awk -F , '{print $2}' | sed 's/^-//g')
-Rx=$(cat coregistration_results_pet.csv | grep ${ID}, | awk -F , '{print $3}' | sed 's/^-//g')
-Ry=$(cat coregistration_results_pet.csv | grep ${ID}, | awk -F , '{print $4}' | sed 's/^-//g')
-Rz=$(cat coregistration_results_pet.csv | grep ${ID}, | awk -F , '{print $5}' | sed 's/^-//g')
-Dice=0$(cat coregistration_results_pet.csv | grep ${ID}, | awk -F , '{print $6}')
-  
-  if [[ -e ${ID}_t1w_r.nii ]] && [[ -e ${ID}_pmpbb3_dyn_mean.nii ]]; then
-    if (( $(echo "$Rmax < 1" | bc -l) )) && (( $(echo "$Rx < 1" | bc -l) )) && (( $(echo "$Ry < 1" | bc -l) )) && (( $(echo "$Rz < 1" | bc -l) )) && (( $(echo "$Dice > 0.94" | bc -l) )); then
-      status_10+=("OK")
-    else
-      status_10+=("CHECK")
-    fi
-  else
-    status_10+=("NA")
-    mkdir -p failed/tq_10/${ID}
-    mv *${ID}* failed/tq_10/${ID}/
-  fi
-done
+if [[ -z "${id}" ]]; then
+    id=${pet%.nii*}
+fi
 
-PROCESS_RESULT_1=Process_Status1_$(date +%Y%m%d_%H%M).csv
-echo "tq_10" > ${PROCESS_RESULT_1}
-for flag in ${status_10[@]}; do echo ${flag} >> ${PROCESS_RESULT_1} ; done
-paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_1} > process_result_tmp.csv && mv process_result_tmp.csv ${PROCESS_RESULT}
-rm ${PROCESS_RESULT_1}
+# Initial check for the existence of input
+check_existence ${inmri} ${inpet}
+subjectdir=${outdir}/${id}
 
-# Step 2. Segmentation
-${TAMEQDIR}/src/bash/tq_20_segmentation.sh
-status_20=()
-for ID in ${IDs[@]}; do
-  if [[ -e c1${ID}_t1w_r.nii ]] && [[ -e c2${ID}_t1w_r.nii ]]; then
-    status_20+=("OK")
-  else
-    status_20+=("NA")
-    if [[ $(find . -maxdepth 1 -name "*${ID}*" | wc -l) > 0 ]]; then
-      mkdir -p failed/tq_20/${ID}
-      mv *${ID}* failed/tq_20/${ID}
-    fi
-  fi
-done
+if [[ -e ${subjectdir} ]]; then
+    echo "Error: ${subjectdir} has already existed."
+    echo "Please use tq-redo.sh with the directory,"
+    echo "Or change ID for processing the input images."
+    exit 1
+fi
 
-PROCESS_RESULT_2=Process_Status2_$(date +%Y%m%d_%H%M).csv
-echo "tq_20" > ${PROCESS_RESULT_2}
-for flag in ${status_20[@]}; do echo ${flag} >> ${PROCESS_RESULT_2} ; done
-paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_2} > process_result_tmp.csv && mv process_result_tmp.csv ${PROCESS_RESULT}
-rm ${PROCESS_RESULT_2}
+# Check license.txt
+if [[ ! -e ${FS_LICENSE} ]]; then 
+    echo "Error: Unable to find FreeSurfer license file."
+    echo "Please check license.txt exists as ${FS_LICENSE}"
+    exit 1
+fi
 
-# Step 3. Semi-Quantification
-# Gray Matter Reference
-${TAMEQDIR}/src/bash/tq_30_suvr_im.sh
-status_30=()
-for ID in ${IDs[@]}; do
-  if [[ -e ${ID}_pmpbb3_suvr.nii.gz ]]; then
-    status_30+=("OK")
-  else
-    status_30+=("NA")
-    if [[ $(find . -maxdepth 1 -name "*${ID}*" | wc -l) > 0 ]]; then
-      mkdir -p failed/tq_30/${ID}/histogram_GM
-      mv *${ID}* failed/tq_30/${ID}
-      find ./histogram_GMref -name "${ID}*" -exec mv {} failed/tq_30/${ID}/histogram_GM
-    fi
-  fi
-done
+### Initial preparation
+mkdir -p ${subjectdir}/orig
+cp ${settingfile} ${subjectdir}/tq-all-setting.env
+sed -i "0,/### Process setting/ s//### Individual setting\nTQID=${id}\n\n&/" ${subjectdir}/tq-all-setting.env
+cp ${refpolicy} ${subjectdir}/reference_policy.py
 
-PROCESS_RESULT_3=Process_Status3_$(date +%Y%m%d_%H%M).csv
-echo "tq_30" > ${PROCESS_RESULT_3}
-for flag in ${status_30[@]}; do echo ${flag} >> ${PROCESS_RESULT_3} ; done
-paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_3} > process_result_tmp.csv && mv process_result_tmp.csv ${PROCESS_RESULT}
-rm ${PROCESS_RESULT_3}
+logfile=${subjectdir}/tq-all.log
+touch ${logfile}
 
-# White Matter Reference
-${TAMEQDIR}/src/bash/tq_31_suvr_wm.sh
-status_31=()
-for ID in ${IDs[@]}; do
-  if [[ -e ${ID}_pmpbb3_suvr_wm.nii.gz ]]; then
-    status_31+=("OK")
-  else
-    status_31+=("NA")
-    if [[ $(find . -maxdepth 1 -name "*${ID}*" | wc -l) > 0 ]]; then
-      mkdir -p failed/tq_31/${ID}/histogram_GMref
-      mkdir failed/tq_31/${ID}/histogram_WMref
-      mv *${ID}* failed/tq_31/${ID}
-      find ./histogram_GMref -name "${ID}*" -exec mv {} failed/tq_31/${ID}/histogram_GMref
-      find ./histogram_WMref -name "${ID}*" -exec mv {} failed/tq_31/${ID}/histogram_WMref
-    fi
-  fi
-done
+exec 3>&1
+exec > >(
+  tee >(awk -v lf="${logfile}" '{
+        print strftime("[%F %T]"), $0 >> lf
+        fflush(lf)
+      }') >&3
+) 2>&1
 
-PROCESS_RESULT_4=Process_Status4_$(date +%Y%m%d_%H%M).csv
-echo "tq_31" > ${PROCESS_RESULT_4}
-for flag in ${status_31[@]}; do echo ${flag} >> ${PROCESS_RESULT_4} ; done
-paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_4} > process_result_tmp.csv && mv process_result_tmp.csv ${PROCESS_RESULT}
-rm ${PROCESS_RESULT_4}
+${TAMEQDIR}/src/bash/tq-logo.sh
+source ${subjectdir}/tq-all-setting.env
 
-# Step 4. FreeSurfer Segmentation
-${TAMEQDIR}/src/bash/tq_40_recon-all.sh
+echo "tq-all.sh starts."
+echo "ID: ${id}"
+echo "PET: ${inpet}"
+echo "MRI: ${inmri}"
+echo "setting file: ${settingfile}"
+echo "python file: ${refpolicy}"
+echo -e "subject directory: ${subjectdir}\n"
 
-status_40=()
-for ID in ${IDs[@]}; do
-  if [[ -e ./subjects/${ID}/mri/wmparc.mgz ]]; then
-    status_40+=("OK")
-  else
-    status_40+=("NA")
-    if [[ $(find . -maxdepth 1 -name "*${ID}*" | wc -l) > 0 ]]; then
-      mkdir -p failed/tq_40/${ID}/subjects
-      mkdir failed/tq_40/${ID}/histogram_GMref
-      mkdir failed/tq_40/${ID}/histogram_WMref
-      mv *${ID}* failed/tq_40/${ID}
-      find ./histogram_GMref -name "${ID}*" -exec mv {} failed/tq_40/${ID}/histogram_GMref
-      find ./histogram_WMref -name "${ID}*" -exec mv {} failed/tq_40/${ID}/histogram_WMref
-      [[ -e subjects/${ID} ]] && mv subjects/${ID} failed/tq_40/${ID}/subjects/
-    fi
-  fi
-done
+# Prepare subject directory
+echo "tq_00"
+echo "Copy original images in ${subjectdir}/orig"
+cp ${inmri} ${inpet} ${subjectdir}/orig
 
-PROCESS_RESULT_5=Process_Status5_$(date +%Y%m%d_%H%M).csv
-echo "tq_40" > ${PROCESS_RESULT_5}
-for flag in ${status_40[@]}; do echo ${flag} >> ${PROCESS_RESULT_5} ; done
-paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_5} > process_result_tmp.csv && mv process_result_tmp.csv ${PROCESS_RESULT}
-rm ${PROCESS_RESULT_5}
+echo "Reorient MR image into LAS..."
+fslreorient2std ${inmri} ${subjectdir}/mri.nii.gz
+${TAMEQDIR}/src/python/reorient2LAS.py ${subjectdir}/mri.nii.gz ${subjectdir}/mri.nii.gz
 
-${TAMEQDIR}/src/bash/tq_41_segmentBS.sh
-status_41=()
-for ID in ${IDs[@]}; do
-  if [[ $(find subjects/${ID}/mri -name "brainstemSsLabels*mgz" | wc -l) > 0 ]]; then
-    status_41+=("OK")
-  else
-    status_41+=("NA")
-    if [[ $(find . -maxdepth 1 -name "*${ID}*" | wc -l) > 0 ]]; then
-      mkdir -p failed/tq_41/${ID}/subjects
-      mkdir failed/tq_41/${ID}/histogram_GMref
-      mkdir failed/tq_41/${ID}/histogram_WMref
-      mv *${ID}* failed/tq_41/${ID}
-      find ./histogram_GMref -name "${ID}*" -exec mv {} failed/tq_41/${ID}/histogram_GMref
-      find ./histogram_WMref -name "${ID}*" -exec mv {} failed/tq_41/${ID}/histogram_WMref
-      [[ -e subjects/${ID} ]] && mv subjects/${ID} failed/tq_41/${ID}/subjects/
-    fi
-  fi
-done
+echo "Reorient PET image into LAS..."
+fslreorient2std ${inpet} ${subjectdir}/pet.nii.gz
+${TAMEQDIR}/src/python/reorient2LAS.py ${subjectdir}/pet.nii.gz ${subjectdir}/pet.nii.gz
 
-PROCESS_RESULT_6=Process_Status6_$(date +%Y%m%d_%H%M).csv
-echo "tq_41" > ${PROCESS_RESULT_6}
-for flag in ${status_41[@]}; do echo ${flag} >> ${PROCESS_RESULT_6} ; done
-paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_6} > process_result_tmp.csv && mv process_result_tmp.csv ${PROCESS_RESULT}
-rm ${PROCESS_RESULT_6}
+echo -e "Directory for tame-q: ${subjectdir}"
 
-# Cerebellum Reference
-${TAMEQDIR}/src/bash/tq_42_suvr_cer.sh
-status_42=()
-for ID in ${IDs[@]}; do
-  if [[ -e ${ID}_pmpbb3_suvr_cer.nii.gz ]]; then
-    status_42+=("OK")
-  else
-    status_42+=("NA")
-    if [[ $(find . -maxdepth 1 -name "*${ID}*" | wc -l) > 0 ]]; then
-      mkdir -p failed/tq_42/${ID}/subjects
-      mkdir failed/tq_42/${ID}/histogram_GMref
-      mkdir failed/tq_42/${ID}/histogram_WMref
-      mv *${ID}* failed/tq_42/${ID}
-      find ./histogram_GMref -name "${ID}*" -exec mv {} failed/tq_42/${ID}/histogram_GMref
-      find ./histogram_WMref -name "${ID}*" -exec mv {} failed/tq_42/${ID}/histogram_WMref
-      [[ -e subjects/${ID} ]] && mv subjects/${ID} failed/tq_42/${ID}/subjects/
-    fi
-  fi
-done
+### Process
+echo -e "\ntq_10_realign.sh starts."
+${TAMEQDIR}/src/bash/tq_10_realign.sh ${subjectdir} --cache ${debug_option}
 
-PROCESS_RESULT_7=Process_Status7_$(date +%Y%m%d_%H%M).csv
-echo "tq_42" > ${PROCESS_RESULT_7}
-for flag in ${status_42[@]}; do echo ${flag} >> ${PROCESS_RESULT_7} ; done
-paste -d "," ${PROCESS_RESULT} ${PROCESS_RESULT_7} > process_result_tmp.csv && mv process_result_tmp.csv ${PROCESS_RESULT}
-rm ${PROCESS_RESULT_7}
+echo -e "\ntq_11_qa_coreg.sh starts."
+${TAMEQDIR}/src/bash/tq_11_qa_coreg.sh ${subjectdir} --cache ${debug_option}
 
-# Step 5. Get Table Data
-${TAMEQDIR}/src/bash/tq_50_gen_table_wmparc_gm.sh
-${TAMEQDIR}/src/bash/tq_51_gen_table_wmparc_wm.sh
-${TAMEQDIR}/src/bash/tq_52_gen_table_wmparc_cer.sh
-${TAMEQDIR}/src/bash/tq_53_merge_wmparc.sh
-${TAMEQDIR}/src/bash/tq_54_gen_table_merged_gm.sh
-${TAMEQDIR}/src/bash/tq_55_gen_table_merged_wm.sh
-${TAMEQDIR}/src/bash/tq_56_gen_table_merged_cer.sh
+echo -e "\ntq_12_qa_report.sh starts."
+${TAMEQDIR}/src/bash/tq_12_qa_report.sh ${subjectdir} --cache ${debug_option}
 
-# Step 6. Get Overview
-for ID in ${IDs[@]}; do
-  ${TAMEQDIR}/src/bash/tq_60_overview_axi.sh -i ${ID} -a 1 -b 2
-  ${TAMEQDIR}/src/bash/tq_61_overview_cor.sh -i ${ID} -a 1 -b 2
-done
+echo -e "\ntq_20_segmentation.sh starts."
+${TAMEQDIR}/src/bash/tq_20_segmentation.sh ${subjectdir} ${debug_option}
+
+echo -e "\ntq_30_suvr_im.sh starts."
+${TAMEQDIR}/src/bash/tq_30_suvr_im.sh ${subjectdir} --cache ${debug_option}
+
+echo -e "\ntq_40_overview.sh starts."
+${TAMEQDIR}/src/bash/tq_40_overview.sh ${subjectdir} ${debug_option}
+
+echo -e "\ntq_50_recon-all.sh starts."
+${TAMEQDIR}/src/bash/tq_50_recon-all.sh ${subjectdir} ${debug_option}
+
+echo -e "\ntq_51_segmentBS.sh starts."
+${TAMEQDIR}/src/bash/tq_51_segmentBS.sh ${subjectdir} ${debug_option}
+
+echo -e "\ntq_52_merge_wmparc.sh starts."
+${TAMEQDIR}/src/bash/tq_52_merge_wmparc.sh ${subjectdir} --cache ${debug_option}
+
+echo -e "\ntq_53_get_cbref.sh starts."
+${TAMEQDIR}/src/bash/tq_53_get_cbref.sh ${subjectdir} ${debug_option}
+
+echo -e "\ntq_60_gen_table_wmparc_gmref.sh starts."
+${TAMEQDIR}/src/bash/tq_60_gen_table_wmparc_gmref.sh ${subjectdir} ${debug_option}
+
+echo -e "\ntq_61_gen_table_wmparc_wmref.sh starts."
+${TAMEQDIR}/src/bash/tq_61_gen_table_wmparc_wmref.sh ${subjectdir} ${debug_option}
+
+echo -e "\ntq_62_gen_table_wmparc_cbref.sh starts."
+${TAMEQDIR}/src/bash/tq_62_gen_table_wmparc_cbref.sh ${subjectdir} ${debug_option}
+
+echo -e "\ntq_63_gen_table_merged_gmref.sh starts."
+${TAMEQDIR}/src/bash/tq_63_gen_table_merged_gmref.sh ${subjectdir} ${debug_option}
+
+echo -e "\ntq_64_gen_table_merged_wmref.sh starts."
+${TAMEQDIR}/src/bash/tq_64_gen_table_merged_wmref.sh ${subjectdir} ${debug_option}
+
+echo -e "\ntq_65_gen_table_merged_cbref.sh starts."
+${TAMEQDIR}/src/bash/tq_65_gen_table_merged_cbref.sh ${subjectdir} ${debug_option}
+
+exit 0

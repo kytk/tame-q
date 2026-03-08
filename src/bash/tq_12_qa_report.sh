@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # 8 Mar 2026 K.Nakayama and K.Nemoto
 
-### TAME-Q tq_10_realign.sh
+### TAME-Q tq_12_qa_report.sh
 
 ### License:
 # This script is distributed under the GNU General Public License version 3.
@@ -51,13 +51,12 @@ shift 1
 ref=${FSLDIR}/data/standard/MNI152_T1_1mm_brain.nii.gz
 settingfile=${subjectdir}/tq-all-setting.env
 cache=false
-debug_option=""
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --ref) ref="$2"; shift 2 ;;
         --set) settingfile="$2"; shift 2 ;;
         --cache) cache=true ; shift 1 ;;
-        --debug) debug_option="--debug"; shift 1 ;;
+        --debug) shift 1 ;;
         --*) echo "Unknown option: $1"; display_usage ; exit 1 ;;
         *) echo "Unknow option: $1"; display_usage ; exit 1 ;;
     esac
@@ -69,27 +68,38 @@ id=${TQID}
 inmri=${subjectdir}/mri.nii.gz
 inpet=${subjectdir}/pet.nii.gz
 
-if [[ -z "${inmri}" ]] || [[ -z "${inpet}" ]]; then
+if [[ -z "${inmri}" ]] || [[ -z "${inpet}" ]] || [[ -z "${id}" ]]; then
     display_usage
     exit 1
 fi
 
 ### Process
-# 1. Coregistration of MR and PET images with MNI standard image
-echo "Coregistration of MR and PET images with MNI standard image"
-${TAMEQDIR}/src/bash/tq-reg.sh \
-                            --inmri ${inmri} \
-                            --inpet ${inpet} \
-                            --ref ${ref} \
-                            --outmri $(basename ${inmri%.nii*}_mni.nii.gz) \
-                            --outpet $(basename ${inpet%.nii*}_mean.nii.gz) \
-                            --outdir ${subjectdir} \
-                            --max_synthstrip ${MAX_SYNTHSTRIP} \
-                            --cost1 ${COST1} \
-                            --cost2 ${COST2} \
-                            --cost3 ${COST3} \
-                            --cache \
-                            ${debug_option}
+# Create QA Report
+echo "Create QA Report"
+fslmaths ${subjectdir}/$(basename ${inmri%.nii*}_mni_brainmask.nii.gz) \
+    -edge -bin ${subjectdir}/$(basename ${inmri%.nii*}_mni_brainedge.nii.gz)
 
+fslmaths ${subjectdir}/$(basename ${inpet%.nii*}_mean_brainmask.nii.gz) \
+    -edge -bin ${subjectdir}/$(basename ${inpet%.nii*}_mean_brainedge.nii.gz)
+
+convert_xfm -omat ${subjectdir}/$(basename ${inpet%.nii*}_MNI2PET.mat) \
+    -inverse ${subjectdir}/$(basename ${inpet%.nii*}_align_mean2MRI.mat)
+
+flirt -dof 6 \
+    -in ${subjectdir}/$(basename ${inmri%.nii*}_mni_brainedge.nii.gz) \
+    -ref ${subjectdir}/$(basename ${inpet%.nii*}_align_mean.nii.gz) \
+    -interp nearestneighbour \
+    -applyxfm -init ${subjectdir}/$(basename ${inpet%.nii*}_MNI2PET.mat) \
+    -out ${subjectdir}/$(basename ${inpet%.nii*}_brainedge4qa.nii.gz)
+
+${TAMEQDIR}/src/python/qa_view.py ${id} \
+                                ${subjectdir}/$(basename ${inmri%.nii*}_mni.nii.gz) \
+                                ${subjectdir}/$(basename ${inpet%.nii*}_mean.nii.gz) \
+                                ${subjectdir}/$(basename ${inpet%.nii*}_align.nii.gz) \
+                                ${subjectdir}/$(basename ${inpet%.nii*}_f0000.nii.gz) \
+                                ${subjectdir}/$(basename ${inmri%.nii*}_mni_brainedge.nii.gz) \
+                                ${subjectdir}/$(basename ${inpet%.nii*}_brainedge4qa.nii.gz) \
+                                ${subjectdir}
 
 exit 0
+

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+# 8 Mar 2026 K.Nakayama and K.Nemoto
 
 import sys
 import numpy as np
@@ -62,3 +63,4 @@ fig.text(0.6, 0.09, ID, size=20)
 fig.savefig(out_pmpbb3)
 
 exit()
+

@@ -1,93 +1,208 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ### TAME-Q tq_30_suvr_im.sh
-### Objectives:
-# This script performs semi-quantification of static PET images using bi-modal curve fitting based on gray matter signals, generating SUVR images.
-
-### Prerequisites:
-# - FSL: Required for image processing tasks such as creating gray matter masks.
-# - Python3: Required for determining reference values through curve fitting.
-
-### Usage:
-# 1. Ensure the following files are present in the directory:
-#    - ${ID}_t1w_r.nii
-#    - c1${ID}_t1w_r_q.nii.gz
-#    - ${ID}_t1w_brain_mask.nii
-#    - ${ID}_t1w2MNI.mat
-#    - ${ID}_pmpbb3_dyn_mean.nii
-# 2. Run the script: tq_30_suvr_im.sh
-
-### Main Outputs:
-# ${ID}_pmpbb3_suvr.nii.gz: SUVR PET image based on the gray matter signal intensity
-# histogram_GMref: Reference voxel images and results of curve fitting in the directory
 
 ### License:
 # This script is distributed under the GNU General Public License version 3.
 # See LICENSE file for details.
 
-# K. Nakayama 21 Mar 2023
+# 8 Mar 2026 K.Nakayama and K.Nemoto
 
 # For Debug
-#set -x
-
-# Load environment variable
-TAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
-source ${TAMEQDIR}/config.env
-
-echo "Calculate SUVR images."
-
-output_directory=histogram_GMref
-mkdir -p ${output_directory}
-
-echo "Figures and histogram_parameters.txt are saved in ${PWD}/${output_directory}."
-if [[ ! -e ${PWD}/${output_directory}/histogram_parameters.txt ]]; then
-  echo -e "ID\tprobability map\tvoxel num\ta1\tb1\tc1\ta2\tb2\tc2\tFWHM_min\tFWHM_max\trefnum\trefval" > ${PWD}/${output_directory}/histogram_parameters.txt
-fi
-
-for f in [A-Z]*_pmpbb3_dyn_mean.nii*
-do
-  id=${f%.gz}
-  id=${id%_pmpbb3_dyn_mean.nii}
-  
-  t1w_r=${id}_t1w_r
-  t1w_brain_mask=${id}_t1w_brain_mask
-
-  msk=c1${id}_t1w_r
-  msk_masked=${msk}_masked
-  msk_thr=c1${id}_t1w_r_thr
-  msk_thr_xero=c1${id}_t1w_r_thr_xero
-  msk_thr_yero=c1${id}_t1w_r_thr_yero
-  msk_eroded=c1${id}_t1w_r_eroded
-  
-  echo "Processing ${id} images."
-  
-  #bet ${t1w} ${t1w_brain} -R -B -f 0.40
-  #flirt -dof 6 -in ${t1w_brain_mask} -ref ${t1w_r} -applyxfm -init ${id}_t1w2MNI.mat -out ${t1w_brain_mask}_r
-  
-  #fslmaths ${msk} -mas ${t1w_brain_mask}_r ${msk_masked}
-  #fslmaths ${msk_masked} -thr 0.9 ${msk_thr}
-  
-  fslmaths ${msk} -mas ${t1w_brain_mask}_r -thr 0.9 ${msk_thr}
-  fslmaths ${msk_thr} -kernel boxv3 3 1 1 -ero ${msk_thr_xero}
-  fslmaths ${msk_thr} -kernel boxv3 1 3 1 -ero ${msk_thr_yero}
-  fslmaths ${msk_thr} -min ${msk_thr_xero} -min ${msk_thr_yero} -bin ${msk_eroded}
-  rm ${msk_thr}.nii.gz ${msk_thr_xero}.nii.gz ${msk_thr_yero}.nii.gz
-  
-  # obtain reference value
-  MEAN=$(fslstats ${f} -k ${msk_eroded} -M)
-  #if [[ `echo "$MEAN < 4" | bc` == 1 ]]; then
-  #  refval=$(python ${TAMEQDIR}/src/python/get_ref.py ${id} ${f} ${msk_eroded}.nii.gz ${output_directory})
-  #  fslmaths ${f} -div ${refval} ${id}_pmpbb3_suvr
-  #else
-  #  # modulate excessive signal distribution as the MEAN == 2.
-  #  fslmaths ${f} -div $(echo "scale=5; $MEAN/2" | bc) ${id}_pmpbb3_dyn_mean_mod.nii.gz
-  #  refval=$(python ${TAMEQDIR}/src/python/get_ref.py ${id} ${id}_pmpbb3_dyn_mean_mod.nii.gz ${msk_eroded}.nii.gz ${output_directory})
-  #  fslmaths ${id}_pmpbb3_dyn_mean_mod.nii.gz -div ${refval} ${id}_pmpbb3_suvr
-  #fi
-  fslmaths ${f} -div $(echo "scale=5; $MEAN/2" | bc) ${id}_pmpbb3_dyn_mean_mod.nii.gz
-  refval=$(python ${TAMEQDIR}/src/python/get_ref.py ${id} ${id}_pmpbb3_dyn_mean_mod.nii.gz ${msk_eroded}.nii.gz ${output_directory})
-  fslmaths ${id}_pmpbb3_dyn_mean_mod.nii.gz -div ${refval} ${id}_pmpbb3_suvr
-  
-  echo "Reference value is ${refval}"
-  
+set -euo pipefail
+for arg in "$@"; do
+    if [[ "${arg}" = "--debug" ]]; then
+        set -x
+    fi
 done
+
+cleanup() {
+    status=$?
+    if [[ "${status}" -eq 0 ]] && [[ "${cache}" = false ]]; then
+        rm -f ${pet_tuned_gm} ${pet_tuned_wm}
+        rm -f ${subjectdir}/${gmtmpimg}*
+        rm -f ${subjectdir}/${wmtmpimg}*
+    fi
+    jobs -pr | xargs -r kill 2>/dev/null || true
+}
+
+trap cleanup EXIT INT TERM
+
+### Define functions
+function display_usage() {
+    echo "Usage: $0 <subject dir> [options]"
+}
+
+function randomphrase() {
+    echo $(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c ${1})
+}
+
+function check_existence() {
+    for f in "$@"; do
+        if [[ ! -e ${f} ]]; then
+            echo "Error: Unable to find ${f}" >&2
+            exit 1
+        fi
+    done
+}
+
+TAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
+
+### Read command line arguments
+# Check the number of command line arguments
+if [[ "$#" -lt 1 ]]; then
+    display_usage
+    exit 1
+fi
+subjectdir="$1"
+shift 1
+
+# Handle necessary arguments
+settingfile=${subjectdir}/tq-all-setting.env
+cache=false
+debug_option=""
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --set) settingfile="$2"; shift 2 ;;
+        --cache) cache=true ; shift 1 ;;
+        --debug) debug_option="--debug"; shift 1 ;;
+        --*) echo "Unknown option: $1"; display_usage ; exit 1 ;;
+        *) echo "Unknow option: $1"; display_usage ; exit 1 ;;
+    esac
+done
+
+# Set variable
+source ${TAMEQDIR}/config.env
+source ${settingfile}
+
+pet=${subjectdir}/pet_mean.nii.gz
+pet_tuned_gm=${pet/mean/tuned_by_gm}
+pet_tuned_wm=${pet/mean/tuned_by_wm}
+c1mask=${subjectdir}/c1mri_mni.nii.gz
+c2mask=${subjectdir}/c2mri_mni.nii.gz
+refpolicy=${subjectdir}/reference_policy.py
+check_existence ${pet} ${c1mask} ${c2mask}
+
+### Gray matter
+# Erosion for c1 mask image
+echo "c1mask erosion (option: ${C1_EROSION_OPTION})"
+${TAMEQDIR}/src/bash/tq-erode.sh ${c1mask} ${subjectdir}/mask_gm_for_hist.nii.gz ${C1_EROSION_OPTION} ${debug_option}
+
+# Tune signal intensity for curve fit
+echo "Tuning signals for curve fitting"
+mean_signal=$(fslstats ${pet} -k ${subjectdir}/mask_gm_for_hist.nii.gz -M)
+fslmaths ${pet} -div $(echo "scale=5; ${mean_signal}/${C1_TUNED_MEAN}" | bc) ${pet_tuned_gm}
+echo "Mean signal in mask_gm_for_hist.nii.gz: ${mean_signal}  --> ${C1_TUNED_MEAN} (tuned)"
+
+# Get reference value by gray matter signals
+echo -e "\nCurve fit (GM, monomodal)"
+${TAMEQDIR}/src/bash/tq-gaussfit.sh \
+                    ${pet_tuned_gm} \
+                    --mask ${subjectdir}/mask_gm_for_hist.nii.gz \
+                    --curves 1 \
+                    --paramset ${refpolicy} \
+                    --outfig ${subjectdir}/result_gm_monomodal_fit.png \
+                    --outfigsize ${OUTFIGSIZE} \
+                    --outfigtype ${OUTFIGTYPE} \
+                    --outtext ${subjectdir}/result_gm_monomodal_fit.txt \
+                    --outhist ${subjectdir}/target_histogram_gm.npy \
+                    ${debug_option}
+
+echo -e "\nCurve fit (GM, bimodal)"
+${TAMEQDIR}/src/bash/tq-gaussfit.sh \
+                    ${pet_tuned_gm} \
+                    --mask ${subjectdir}/mask_gm_for_hist.nii.gz \
+                    --curves 2 \
+                    --paramset ${refpolicy} \
+                    --outfig ${subjectdir}/result_gm_bimodal_fit.png \
+                    --outfigsize ${OUTFIGSIZE} \
+                    --outfigtype ${OUTFIGTYPE} \
+                    --outtext ${subjectdir}/result_gm_bimodal_fit.txt \
+                    ${debug_option}
+
+
+# Create reference weight image
+echo -e "\nReference determination (GM) ..."
+${TAMEQDIR}/src/bash/tq-refgen.sh \
+                    ${pet_tuned_gm} \
+                    ${subjectdir}/reference_gm.nii.gz \
+                    --mask ${subjectdir}/mask_gm_for_hist.nii.gz \
+                    --curve ${subjectdir}/result_gm_monomodal_fit.txt monomodal \
+                    --curve ${subjectdir}/result_gm_bimodal_fit.txt bimodal \
+                    --targethist ${subjectdir}/target_histogram_gm.npy \
+                    --policy ${refpolicy} \
+                    ${debug_option}
+
+# Calculate reference value
+echo -e "\nReference calculation (GM) ..."
+gmtmpimg=tq-all_tmp$(randomphrase 8)
+fslmaths ${pet_tuned_gm} -mul ${subjectdir}/reference_gm.nii.gz ${subjectdir}/${gmtmpimg}
+reference_value_gm=$(fslstats ${subjectdir}/${gmtmpimg} -M)
+echo "Reference value = ${reference_value_gm}"
+
+# Devide PET image by reference value for semi-quantification
+fslmaths ${pet_tuned_gm} -div ${reference_value_gm} ${pet/mean/suvr_gm}
+echo "  --> Create SUVR image (${pet/mean/suvr_gm})"
+
+### White Matter
+# Erosion for c2 mask image
+echo "c2mask erosion (option: ${C2_EROSION_OPTION})"
+${TAMEQDIR}/src/bash/tq-erode.sh ${c2mask} ${subjectdir}/mask_wm_for_hist.nii.gz ${C2_EROSION_OPTION} ${debug_option}
+
+# Tune signal intensity for curve fit
+echo "Tuning signals for curve fitting"
+mean_signal=$(fslstats ${pet} -k ${subjectdir}/mask_wm_for_hist.nii.gz -M)
+fslmaths ${pet} -div $(echo "scale=5; ${mean_signal}/${C2_TUNED_MEAN}" | bc) ${pet_tuned_wm}
+echo "Mean signal in mask_wm_for_hist.nii.gz: ${mean_signal}  --> ${C2_TUNED_MEAN} (tuned)"
+
+# Get reference value by gray matter signals
+echo -e "\nCurve fit (WM, monomodal)"
+${TAMEQDIR}/src/bash/tq-gaussfit.sh \
+                    ${pet_tuned_wm} \
+                    --mask ${subjectdir}/mask_wm_for_hist.nii.gz \
+                    --curves 1 \
+                    --paramset ${refpolicy} \
+                    --outfig ${subjectdir}/result_wm_monomodal_fit.png \
+                    --outfigsize ${OUTFIGSIZE} \
+                    --outfigtype ${OUTFIGTYPE} \
+                    --outtext ${subjectdir}/result_wm_monomodal_fit.txt \
+                    --outhist ${subjectdir}/target_histogram_wm.npy \
+                    ${debug_option}
+
+echo -e "\nCurve fit (WM, bimodal)"
+${TAMEQDIR}/src/bash/tq-gaussfit.sh \
+                    ${pet_tuned_wm} \
+                    --mask ${subjectdir}/mask_wm_for_hist.nii.gz \
+                    --curves 2 \
+                    --paramset ${refpolicy} \
+                    --outfig ${subjectdir}/result_wm_bimodal_fit.png \
+                    --outfigsize ${OUTFIGSIZE} \
+                    --outfigtype ${OUTFIGTYPE} \
+                    --outtext ${subjectdir}/result_wm_bimodal_fit.txt \
+                    ${debug_option}
+
+# Create reference weight image
+echo -e "\nReference determination (WM) ..."
+${TAMEQDIR}/src/bash/tq-refgen.sh \
+                    ${pet_tuned_wm} \
+                    ${subjectdir}/reference_wm.nii.gz \
+                    --mask ${subjectdir}/mask_wm_for_hist.nii.gz \
+                    --curve ${subjectdir}/result_wm_monomodal_fit.txt monomodal \
+                    --curve ${subjectdir}/result_wm_bimodal_fit.txt bimodal \
+                    --targethist ${subjectdir}/target_histogram_wm.npy \
+                    --policy ${refpolicy} \
+                    ${debug_option}
+
+# Calculate reference value
+echo -e "\nReference calculation (WM) ..."
+wmtmpimg=tq-all_tmp$(randomphrase 8)
+fslmaths ${pet_tuned_wm} -mul ${subjectdir}/reference_wm.nii.gz ${subjectdir}/${wmtmpimg}
+reference_value_wm=$(fslstats ${subjectdir}/${wmtmpimg} -M)
+echo "Reference value = ${reference_value_wm}"
+
+# Devide PET image by reference value for semi-quantification
+fslmaths ${pet_tuned_wm} -div ${reference_value_wm} ${pet/mean/suvr_wm}
+echo "  --> Create SUVR image (${pet/mean/suvr_wm})"
+
+exit 0
+
