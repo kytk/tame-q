@@ -1,5 +1,13 @@
 #!/usr/bin/env bash
-# 8 Mar 2026 K.Nakayama and K.Nemoto
+# 20 Mar 2026 K.Nakayama and K.Nemoto
+set -e
+
+exit_without_error () {
+    echo 'TAME-Q is added to $PATH'
+    echo 'To do TAME-Q, please command the below:'
+    echo "    source ${PATHFILE}"
+}
+trap exit_without_error EXIT
 
 SCRIPTDIR=$(dirname $(realpath "$0"))
 
