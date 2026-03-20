@@ -67,7 +67,10 @@ It is distributed in two formats:
   cd ~/git
   rm -rf tame-q
   git clone https://github.com/kytk/tame-q.git
-  ~/git/tame-q/setup.sh
+
+  # If you use v2.0.0-beta1, please continue the below
+  git checkout v2.0.0-beta1
+  ~/git/tame-q/setup.sh 
   ```
 - TAME-Q accepts NIfTI images as input. If you would like to apply TAME-Q to DICOM images, we recommend converting them with [dcm2niix](https://github.com/rordenlab/dcm2niix). Please note that images converted using other methods have not been validated for compatibility. For details on how to use dcm2niix, please refer to the official documentation.
 - TAME-Q identifies the image pairs to process based on file naming conventions. Rename the files you wish to process according to the following rules:
