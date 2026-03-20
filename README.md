@@ -67,6 +67,7 @@ It is distributed in two formats:
   cd ~/git
   rm -rf tame-q
   git clone https://github.com/kytk/tame-q.git
+  ~/git/tame-q/setup.sh
   ```
 - TAME-Q accepts NIfTI images as input. If you would like to apply TAME-Q to DICOM images, we recommend converting them with [dcm2niix](https://github.com/rordenlab/dcm2niix). Please note that images converted using other methods have not been validated for compatibility. For details on how to use dcm2niix, please refer to the official documentation.
 - TAME-Q identifies the image pairs to process based on file naming conventions. Rename the files you wish to process according to the following rules:
@@ -77,6 +78,10 @@ It is distributed in two formats:
         - T1-weighted image: `CON_001_t1w.nii.gz`
         - PET image: `CON_001_pmpbb3_dyn.nii.gz`
   Since TAME-Q was developed primarily for PM-PBB3 PET data, the filename suffix is currently fixed as `pmpbb3_dyn`. Even for images acquired using other tracers, this naming convention should be followed. We plan to make filename recognition more flexible in the future.
+- From version 2.0.0 onward (as of March 20, 2026, only the beta version is available), you can also directly specify input files when running tq-all.sh as shown below:
+  ```bash
+  tq-all.sh --id <ID> --mri <MRI file> --pet <PET file> [--outdir path (optional)] [options]
+  ```
 
 ## Running TAME-Q
 - Navigate to the directory containing the prepared files and run the following command:
