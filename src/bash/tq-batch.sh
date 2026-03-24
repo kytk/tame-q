@@ -152,11 +152,7 @@ draw() {
     printf '%-6s %s\n' "Finished: ${n_finished} lines"
 
     tput el 2>/dev/null || printf '\033[K]'
-    if [[ "$(( n_running + n_finished ))" -eq "${n_input}" ]]; then
-        printf '%-6s %s\n' "Please wait... ${markers[${markerindex}]}"
-    else
-        printf '%-6s %s\n' "Something might be wrong... (process number mismatch) ${markers[${markerindex}]}"
-    fi
+    printf '%-6s %s\n' "Please wait... ${markers[${markerindex}]}"
 
     markerindex=$(( ( markerindex + 1 ) % 4 ))
 }
