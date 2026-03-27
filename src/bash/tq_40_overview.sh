@@ -61,7 +61,7 @@ done
 TAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
 source ${TAMEQDIR}/config.env
 source ${settingfile}
-ref=${FSLDIR}/data/standard/MNI152_T1_1mm_brain.nii.gz
+ref=${FSLDIR}/data/standard/MNI152_T1_1mm.nii.gz
 
 ID=${TQID}
 mri_mni=${subjectdir}/mri_mni.nii.gz
