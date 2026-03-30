@@ -43,6 +43,7 @@ def determine_reference_voxel(pet, params, histogramfile=None):
         weight1=gaussian(pet, bi_a1, bi_b1, bi_c1)
         weight2=gaussian(pet, bi_a2, bi_b2, bi_c2)
         sum_weight=weight1+weight2
+        sum_weight[sum_weight==0]=1e-10
         out=np.where((fwhm_min<pet)&(pet<fwhm_max), weight1/sum_weight, 0)
 
     return out
