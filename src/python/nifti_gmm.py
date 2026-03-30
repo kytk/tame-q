@@ -331,6 +331,11 @@ def main():
     # Get histogram
     bin_counts, bin_edges=get_histogram(values, bin_width, bin_n, bin_min, bin_max)
     bin_centers=(bin_edges[:-1]+bin_edges[1:])/2
+    
+    # Cut polar bins with zero frequency
+    idx=np.argmax(bin_counts!=0)
+    bin_counts=bin_counts[idx:]
+    bin_centers=bin_centers[idx:]
 
     # Import initial parameter function
     sys.dont_write_bytecode=True    # Suppress __pycache__ 
