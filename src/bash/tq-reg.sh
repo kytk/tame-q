@@ -23,8 +23,15 @@ function display_usage() {
     echo "Usage: $0 <--inmri MRI> <--inpet PET> <--outmri filename> <--outpet filename> [options]"
 }
 
+calc_nonzero () {
+    voxel_fov=$(fslstats $1 -v | awk '{print $1}')
+    voxel_head=$(fslstats $1 -V | awk '{print $1}')
+    echo "${voxel_head} / ${voxel_fov}" | bc -l
+}
+
 ### DEFAULT VALUE SETTING
 REFIMG=${FSLDIR}/data/standard/MNI152_T1_1mm_brain.nii.gz
+WARNINGTHR=0.2
 
 ### Read command line arguments
 # Check the number of command line arguments
@@ -91,15 +98,51 @@ fslmaths ${outdir}/$(basename ${inpet%.nii*}_align.nii.gz) -Tmean ${outdir}/$(ba
 
 # 4. Coregister PET image to MR image
 echo "Coregister PET image to MR image..."
-flirt -dof 6 -in ${outdir}/$(basename ${inpet%.nii*}_align_mean.nii.gz) -ref ${outdir}/${outmri} -searchcost ${COST3} -cost ${COST3} -omat ${outdir}/$(basename ${inpet%.nii*}_align_mean2MRI.mat) -out ${outdir}/${outpet}
+
+# cost function: normmi
+if [[ ${COST3} = "auto" ]] || [[ ${COST3} = "normmi" ]]; then
+    flirt -dof 6 -in ${outdir}/$(basename ${inpet%.nii*}_align_mean.nii.gz) -ref ${outdir}/${outmri} -searchcost normmi -cost normmi -omat ${outdir}/tmp_normmi_$(basename ${inpet%.nii*}_align_mean2MRI.mat) -out ${outdir}/tmp_normmi_${outpet}
+    
+    # Check whether brain is in FOV
+    nonzero_ratio_normmi=$(calc_nonzero ${outdir}/tmp_normmi_${outpet})
+    flag_warn_normmi=$(echo "${nonzero_ratio_normmi} < ${WARNINGTHR}" | bc)
+    if [[ ${flag_warn_normmi} = 1 ]]; then
+        echo "Warning: PET image coregistration might be failed (normmi)."
+    fi
+
+    if [[ ${flag_warn_normmi} = 0 ]] || [[ ${COST3} = "normmi" ]] ; then
+        mv ${outdir}/tmp_normmi_$(basename ${inpet%.nii*}_align_mean2MRI.mat) ${outdir}/$(basename ${inpet%.nii*}_align_mean2MRI.mat)
+        mv ${outdir}/tmp_normmi_${outpet} ${outdir}/${outpet}
+        exit 0
+    fi
+fi
+
+# cost function: mutualinfo
+flirt -dof 6 -in ${outdir}/$(basename ${inpet%.nii*}_align_mean.nii.gz) -ref ${outdir}/${outmri} -searchcost mutualinfo -cost mutualinfo -omat ${outdir}/tmp_mutualinfo_$(basename ${inpet%.nii*}_align_mean2MRI.mat) -out ${outdir}/tmp_mutualinfo_${outpet}
 
 # Check whether brain is in FOV
-voxel_fov=$(fslstats ${outdir}/${outpet} -v | awk '{print $1}')
-voxel_head=$(fslstats ${outdir}/${outpet} -V | awk '{print $1}')
-if [[ $(echo "${voxel_head} < ${voxel_fov} * 0.2" | bc ) = 1 ]]; then
-    echo "Warning: PET image coregistration might be failed."
-#    echo "Please check the coregistration with ${outmri} and ${outpet}"
-#    exit 1
+nonzero_ratio_mutualinfo=$(calc_nonzero ${outdir}/tmp_mutualinfo_${outpet})
+flag_warn_mutualinfo=$(echo "${nonzero_ratio_mutualinfo} < ${WARNINGTHR}" | bc)
+if [[ ${flag_warn_mutualinfo} = 1 ]]; then
+    echo "Warning: PET image coregistration might be failed (mutualinfo)."
+fi
+
+if [[ ${flag_warn_mutualinfo} = 0 ]] || [[ ${COST3} = "mutualinfo" ]] ; then
+    mv ${outdir}/tmp_mutualinfo_$(basename ${inpet%.nii*}_align_mean2MRI.mat) ${outdir}/$(basename ${inpet%.nii*}_align_mean2MRI.mat)
+    mv ${outdir}/tmp_mutualinfo_${outpet} ${outdir}/${outpet}
+    exit 0
+fi
+
+# Both mutualinfo and normmi might not work well...
+echo "Both mutualinfo and normmi might not work well in PET-to-MRI coregistration."
+if [[ $(echo "${nonzero_ratio_normmi} > ${nonzero_ratio_mutualinfo}" | bc) = 1 ]]; then
+    echo "Result with normmi is accepted."
+    mv ${outdir}/tmp_normmi_$(basename ${inpet%.nii*}_align_mean2MRI.mat) ${outdir}/$(basename ${inpet%.nii*}_align_mean2MRI.mat)
+    mv ${outdir}/tmp_normmi_${outpet} ${outdir}/${outpet}
+else
+    echo "Result with mutualinfo is accepted."
+    mv ${outdir}/tmp_mutualinfo_$(basename ${inpet%.nii*}_align_mean2MRI.mat) ${outdir}/$(basename ${inpet%.nii*}_align_mean2MRI.mat)
+    mv ${outdir}/tmp_mutualinfo_${outpet} ${outdir}/${outpet}
 fi
 
 echo "Please check the below output files:"
