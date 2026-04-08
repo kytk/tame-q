@@ -51,11 +51,13 @@ shift 1
 force="99"
 cache=false
 debug_option=""
+run_flag=false
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --force) force="$2"; shift 2 ;;
         --cache) cache=true; shift 1 ;;
         --debug) debug_option="--debug"; shift 1 ;;
+        --run) run_flag=true; shift 1 ;;
         --*) echo "Unknown option: $1"; display_usage ; exit 1 ;;
         *) echo "Unknow option: $1"; display_usage ; exit 1 ;;
     esac
@@ -93,16 +95,18 @@ if [[ "${force}" -lt "${step}" ]]; then
     step=${force}
 fi
 
-while true; do
-    echo "Run scripts from tq_${step} onward in ${subjectdir}? [y/n]"
-    read answer
+if [[ ${run_flag} = false ]]; then
+    while true; do
+        echo "Run scripts from tq_${step} onward in ${subjectdir}? [y/n]"
+        read answer
 
-    case $answer in
-    	[Yy]*) echo -e "Continue processing \n" ; break ;;
-      	[Nn]*) echo -e "Quit to process \n" ; exit 1 ;;
-      	*) echo -e "Type y or n \n" ;;
-    esac
-done
+        case $answer in
+            [Yy]*) echo -e "Continue processing \n" ; break ;;
+            [Nn]*) echo -e "Quit to process \n" ; exit 1 ;;
+            *) echo -e "Type y or n \n" ;;
+        esac
+    done
+fi
 
 if [[ "${step}" -lt 20 ]]; then
     ${TAMEQDIR}/src/bash/tq_10_realign.sh ${subjectdir} --cache ${debug_option}
