@@ -72,6 +72,7 @@ inpet=""
 refpolicy=${TAMEQDIR}/src/python/reference_policy.py
 settingfile=${TAMEQDIR}/env/tq-all-setting.env
 outdir=$(pwd)
+flag_half=false
 cache=false
 debug_option=""
 while [ "$#" -gt 0 ]; do
@@ -82,6 +83,7 @@ while [ "$#" -gt 0 ]; do
         --set) settingfile="$2"; shift 2 ;;
         --refpolicy) refpolicy="$2"; shift 2 ;;
         --outdir) outdir="${2%/}"; shift 2 ;;
+        --half) flag_half=true; shift 1 ;;
         --cache) cache=true; shift 1 ;;
         --debug) debug_option="--debug"; shift 1 ;;
         --*) echo "Unknown option: $1"; display_usage ; exit 1 ;;
@@ -179,6 +181,10 @@ ${TAMEQDIR}/src/bash/tq_30_suvr_im.sh ${subjectdir} --cache ${debug_option}
 
 echo -e "\ntq_40_overview.sh starts."
 ${TAMEQDIR}/src/bash/tq_40_overview.sh ${subjectdir} ${debug_option}
+
+if [[ ${flag_half} = "true" ]]; then
+    exit 0
+fi
 
 echo -e "\ntq_50_recon-all.sh starts."
 ${TAMEQDIR}/src/bash/tq_50_recon-all.sh ${subjectdir} ${debug_option}

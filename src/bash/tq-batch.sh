@@ -28,6 +28,7 @@ fi
 
 t1w_suffix="_t1w"
 settingfile=${TAMEQDIR}/env/tq-all-setting.env
+half_option=""
 cache_option=""
 debug_option=""
 
@@ -35,6 +36,7 @@ while [ "$#" -gt 0 ]; do
     case "$1" in
         --suffix) t1w_suffix="${2%.nii*}"; shift 2 ;;
         --set) settingfile="$2"; shift 2 ;;
+        --half) half_option="--half"; shift 1 ;;
         --cache) cache_option="--cache"; shift 1 ;;
         --debug) debug_option="--debug"; shift 1 ;;
         --help) display_usage ; exit 1 ;;
@@ -186,7 +188,7 @@ for i in "${!IDs[@]}"; do
         sleep 1s
     done
 
-    (${TAMEQDIR}/src/bash/tq-all.sh --id ${name} --mri ${mri} --pet ${pet} --outdir ${outdir} --set ${settingfile} ${cache_option} ${debug_option} >/dev/null ) &
+    (${TAMEQDIR}/src/bash/tq-all.sh --id ${name} --mri ${mri} --pet ${pet} --outdir ${outdir} --set ${settingfile} ${half_option} ${cache_option} ${debug_option} >/dev/null ) &
     PIDS+=("$!")
 done
 
