@@ -135,7 +135,7 @@ exec > >(
 
 ${TAMEQDIR}/src/bash/tq-logo.sh
 echo "version: $(cat ${TAMEQDIR}/INFO)"
-echo "commit: $(cd ${TAMEQDIR} ; git rev-parse HEAD)"
+echo "commit: $(${TAMEQDIR}/src/bash/tq-hash.sh)"
 source ${subjectdir}/tq-all-setting.env
 
 echo "tq-all.sh starts."
