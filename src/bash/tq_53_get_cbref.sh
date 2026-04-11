@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 
-### TAME-Q tq_53_merge_wmparc.sh
+### TAME-Q tq_53_get_cbref.sh
 # 8 Mar 2026 K.Nakayama and K.Nemoto
 
 # For Debug
