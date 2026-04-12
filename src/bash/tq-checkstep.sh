@@ -82,7 +82,7 @@ if [[ ! -e ${subjectdir}/pet_suvr_gmref.nii.gz ]] || [[ ! -e ${subjectdir}/pet_s
 fi
 
 # tq_40
-if [[ ! -e ${subjectdir}/overview_pet_axial.png ]] || [[ ! -e ${subjectdir}/overview_pet_coronal.png ]]; then
+if [[ ! -e ${subjectdir}/overview_pet_gmref_axial.png ]] || [[ ! -e ${subjectdir}/overview_pet_gmref_coronal.png ]] || [[ ! -e ${subjectdir}/overview_pet_wmref_axial.png ]] || [[ ! -e ${subjectdir}/overview_pet_wmref_coronal.png ]]; then
     echo "40"
     exit 0
 fi
