@@ -62,6 +62,12 @@ TAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
 source ${TAMEQDIR}/config.env
 source ${settingfile}
 ID=${TQID}
+tmpmat=${subjectdir}/mni_to_view.mat
+mri_mni=${subjectdir}/mri_mni.nii.gz
+mri_view=${subjectdir}/mri_view.nii.gz
+ref=${FSLDIR}/data/standard/MNI152_T1_1mm.nii.gz
+pet_suvr_cbref=${subjectdir}/pet_suvr_cbref.nii.gz
+pet_view_cbref=${subjectdir}/pet_suvr_cbref_view.nii.gz
 
 check_existence ${subjectdir}/wmparc.nii.gz
 wmparc=${subjectdir}/wmparc.nii.gz
@@ -75,6 +81,14 @@ fslmaths ${subjectdir}/tmp_wmparc_8.nii.gz -add ${subjectdir}/tmp_wmparc_47.nii.
 
 # Semi-quantification by cerebellum reference
 refval=$(fslstats -K ${subjectdir}/cbmask.nii.gz ${subjectdir}/pet_mean.nii.gz -m)
-fslmaths ${subjectdir}/pet_mean.nii.gz -div ${refval} ${subjectdir}/pet_suvr_cbref.nii.gz
+fslmaths ${subjectdir}/pet_mean.nii.gz -div ${refval} ${pet_suvr_cbref}
 
+# Overview
+echo "Overlay SUVR (cbref) image onto T1w image"
+if [[ ! -e ${tmpmat} ]]; then
+    flirt -dof 9 -in ${mri_mni} -ref ${ref} -omat ${tmpmat} -out ${mri_view}
+fi
+flirt -dof 9 -in ${pet_suvr_cbref} -ref ${ref} -applyxfm -init ${tmpmat} -out ${pet_view_cbref}
+python ${TAMEQDIR}/src/python/overlay_view_axi.py ${ID} ${mri_view} ${pet_view_cbref} ${OVERVIEW_THR} ${OVERVIEW_UTHR} ${subjectdir}/overview_mri_axial.png ${subjectdir}/overview_pet_cbref_axial.png
+python ${TAMEQDIR}/src/python/overlay_view_cor.py ${ID} ${mri_view} ${pet_view_cbref} ${OVERVIEW_THR} ${OVERVIEW_UTHR} ${subjectdir}/overview_mri_coronal.png ${subjectdir}/overview_pet_cbref_coronal.png
 exit 0

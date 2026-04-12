@@ -66,19 +66,31 @@ ref=${FSLDIR}/data/standard/MNI152_T1_1mm.nii.gz
 ID=${TQID}
 mri_mni=${subjectdir}/mri_mni.nii.gz
 mri_view=${subjectdir}/mri_view.nii.gz
-pet_mni=${subjectdir}/pet_suvr_gm.nii.gz
-pet_view=${subjectdir}/pet_suvr_gm_view.nii.gz
+pet_mni_gm=${subjectdir}/pet_suvr_gm.nii.gz
+pet_view_gm=${subjectdir}/pet_suvr_gm_view.nii.gz
+pet_mni_wm=${subjectdir}/pet_suvr_wm.nii.gz
+pet_view_wm=${subjectdir}/pet_suvr_wm_view.nii.gz
+#pet_mni_cb=${subjectdir}/pet_suvr_cbref.nii.gz
+#pet_view_cb=${subjectdir}/pet_suvr_cbref_view.nii.gz
 tmpmat=${subjectdir}/mni_to_view.mat
 
-check_existence ${mri_mni} ${pet_mni}
+check_existence ${mri_mni} ${pet_mni_gm} ${pet_mni_wm}
 
 ### Process
+# gmref
 flirt -dof 9 -in ${mri_mni} -ref ${ref} -omat ${tmpmat} -out ${mri_view}
-flirt -dof 9 -in ${pet_mni} -ref ${ref} -applyxfm -init ${tmpmat} -out ${pet_view}
+flirt -dof 9 -in ${pet_mni_gm} -ref ${ref} -applyxfm -init ${tmpmat} -out ${pet_view_gm}
+flirt -dof 9 -in ${pet_mni_wm} -ref ${ref} -applyxfm -init ${tmpmat} -out ${pet_view_wm}
 
 echo "Overlay SUVR image onto T1w image"
-python ${TAMEQDIR}/src/python/overlay_view_axi.py ${ID} ${mri_view} ${pet_view} ${OVERVIEW_THR} ${OVERVIEW_UTHR} ${subjectdir}/overview_mri_axial.png ${subjectdir}/overview_pet_axial.png
-python ${TAMEQDIR}/src/python/overlay_view_cor.py ${ID} ${mri_view} ${pet_view} ${OVERVIEW_THR} ${OVERVIEW_UTHR} ${subjectdir}/overview_mri_coronal.png ${subjectdir}/overview_pet_coronal.png
+python ${TAMEQDIR}/src/python/overlay_view_axi.py ${ID} ${mri_view} ${pet_view_gm} ${OVERVIEW_THR} ${OVERVIEW_UTHR} ${subjectdir}/overview_mri_axial.png ${subjectdir}/overview_pet_gmref_axial.png
+python ${TAMEQDIR}/src/python/overlay_view_cor.py ${ID} ${mri_view} ${pet_view_gm} ${OVERVIEW_THR} ${OVERVIEW_UTHR} ${subjectdir}/overview_mri_coronal.png ${subjectdir}/overview_pet_gmref_coronal.png
+
+python ${TAMEQDIR}/src/python/overlay_view_axi.py ${ID} ${mri_view} ${pet_view_wm} ${OVERVIEW_THR} ${OVERVIEW_UTHR} ${subjectdir}/overview_mri_axial.png ${subjectdir}/overview_pet_wmref_axial.png
+python ${TAMEQDIR}/src/python/overlay_view_cor.py ${ID} ${mri_view} ${pet_view_wm} ${OVERVIEW_THR} ${OVERVIEW_UTHR} ${subjectdir}/overview_mri_coronal.png ${subjectdir}/overview_pet_wmref_coronal.png
+
+#python ${TAMEQDIR}/src/python/overlay_view_axi.py ${ID} ${mri_view} ${pet_view_cb} ${OVERVIEW_THR} ${OVERVIEW_UTHR} ${subjectdir}/overview_mri_axial.png ${subjectdir}/overview_pet_cbref_axial.png
+#python ${TAMEQDIR}/src/python/overlay_view_cor.py ${ID} ${mri_view} ${pet_view_cb} ${OVERVIEW_THR} ${OVERVIEW_UTHR} ${subjectdir}/overview_mri_coronal.png ${subjectdir}/overview_pet_cbref_coronal.png
 
 exit
 
