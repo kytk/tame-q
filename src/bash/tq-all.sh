@@ -33,10 +33,10 @@ cleanup() {
     status=$?
     if [[ "${status}" -eq 0 ]] && [[ "${cache}" = false ]]; then
         rm -f ${subjectdir}/tq-all_tmp*.nii.gz
-        rm -f mri_view.nii.gz
-        rm -f ${subjectdir}/pet_suvr_?m_view.nii.gz
-        rm -f pet_f????.nii.gz
-        rm -f pet_f????_align.nii.gz
+        rm -f ${subjectdir}/mri_view.nii.gz
+        rm -f ${subjectdir}/pet_suvr_??ref_view.nii.gz
+        rm -f ${subjectdir}/pet_f????.nii.gz
+        rm -f ${subjectdir}/pet_f????_align.nii.gz
     fi
     jobs -pr | xargs -r kill 2>/dev/null || true
 }
