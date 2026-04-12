@@ -69,7 +69,7 @@ source ${TAMEQDIR}/config.env
 source ${settingfile}
 ID=${TQID}
 
-suvr_gmref=${subjectdir}/pet_suvr_gm.nii.gz
+suvr_gmref=${subjectdir}/pet_suvr_gmref.nii.gz
 wmparc=${subjectdir}/wmparc.nii.gz
 bsparc=${subjectdir}/bsparc.nii.gz
 check_existence ${wmparc} ${bsparc}

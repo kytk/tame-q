@@ -76,7 +76,7 @@ if [[ ! -e ${subjectdir}/c1mri_mni.nii.gz ]] || [[ ! -e ${subjectdir}/c2mri_mni.
 fi
 
 # tq_30
-if [[ ! -e ${subjectdir}/pet_suvr_gm.nii.gz ]] || [[ ! -e ${subjectdir}/pet_suvr_wm.nii.gz ]]; then
+if [[ ! -e ${subjectdir}/pet_suvr_gmref.nii.gz ]] || [[ ! -e ${subjectdir}/pet_suvr_wmref.nii.gz ]]; then
     echo "30"
     exit 0
 fi

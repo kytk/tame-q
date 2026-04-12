@@ -68,7 +68,7 @@ source ${TAMEQDIR}/config.env
 source ${settingfile}
 ID=${TQID}
 
-suvr_gmref=${subjectdir}/pet_suvr_gm.nii.gz
+suvr_gmref=${subjectdir}/pet_suvr_gmref.nii.gz
 merged=${subjectdir}/wmparc_merged.nii.gz
 check_existence ${merged}
 

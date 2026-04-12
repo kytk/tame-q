@@ -66,10 +66,10 @@ ref=${FSLDIR}/data/standard/MNI152_T1_1mm.nii.gz
 ID=${TQID}
 mri_mni=${subjectdir}/mri_mni.nii.gz
 mri_view=${subjectdir}/mri_view.nii.gz
-pet_mni_gm=${subjectdir}/pet_suvr_gm.nii.gz
-pet_view_gm=${subjectdir}/pet_suvr_gm_view.nii.gz
-pet_mni_wm=${subjectdir}/pet_suvr_wm.nii.gz
-pet_view_wm=${subjectdir}/pet_suvr_wm_view.nii.gz
+pet_mni_gm=${subjectdir}/pet_suvr_gmref.nii.gz
+pet_view_gm=${subjectdir}/pet_suvr_gmref_view.nii.gz
+pet_mni_wm=${subjectdir}/pet_suvr_wmref.nii.gz
+pet_view_wm=${subjectdir}/pet_suvr_wmref_view.nii.gz
 
 tmpmat=${subjectdir}/mni_to_view.mat
 

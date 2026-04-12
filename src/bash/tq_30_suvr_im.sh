@@ -148,8 +148,8 @@ reference_value_gm=$(${TAMEQDIR}/src/python/nifti_wmean.py ${pet_tuned_gm} ${sub
 echo "Reference value = ${reference_value_gm}"
 
 # Devide PET image by reference value for semi-quantification
-fslmaths ${pet_tuned_gm} -div ${reference_value_gm} ${pet/mean/suvr_gm}
-echo "  --> Create SUVR image (${pet/mean/suvr_gm})"
+fslmaths ${pet_tuned_gm} -div ${reference_value_gm} ${pet/mean/suvr_gmref}
+echo "  --> Create SUVR image (${pet/mean/suvr_gmref})"
 
 ### White Matter
 # Threshold probability mask
@@ -213,8 +213,8 @@ reference_value_wm=$(${TAMEQDIR}/src/python/nifti_wmean.py ${pet_tuned_wm} ${sub
 echo "Reference value = ${reference_value_wm}"
 
 # Devide PET image by reference value for semi-quantification
-fslmaths ${pet_tuned_wm} -div ${reference_value_wm} ${pet/mean/suvr_wm}
-echo "  --> Create SUVR image (${pet/mean/suvr_wm})"
+fslmaths ${pet_tuned_wm} -div ${reference_value_wm} ${pet/mean/suvr_wmref}
+echo "  --> Create SUVR image (${pet/mean/suvr_wmref})"
 
 exit 0
 
