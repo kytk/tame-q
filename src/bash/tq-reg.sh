@@ -12,6 +12,10 @@ cleanup() {
     status=$?
     if [[ "${status}" -eq 0 ]] && [[ "${cache}" = false ]]; then
         rm -f ${inpet%.nii*}_align_mean.nii.gz
+        rm -f ${outdir}/tmp_normmi_$(basename ${inpet%.nii*}_align_mean2MRI.mat)
+        rm -f ${outdir}/tmp_normmi_${outpet}
+        rm -f ${outdir}/tmp_mutualinfo_$(basename ${inpet%.nii*}_align_mean2MRI.mat)
+        rm -f ${outdir}/tmp_mutualinfo_${outpet}
     fi
     jobs -pr | xargs -r kill 2>/dev/null || true
 }
@@ -108,6 +112,9 @@ if [[ ${COST3} = "auto" ]] || [[ ${COST3} = "normmi" ]]; then
     flag_warn_normmi=$(echo "${nonzero_ratio_normmi} < ${WARNINGTHR}" | bc)
     if [[ ${flag_warn_normmi} = 1 ]]; then
         echo "Warning: PET image coregistration might be failed (normmi)."
+        if [[ ${COST3} = "auto" ]]; then
+        echo "Switch cost function: normmi --> mutualinfo"
+        fi
     fi
 
     if [[ ${flag_warn_normmi} = 0 ]] || [[ ${COST3} = "normmi" ]] ; then
