@@ -116,30 +116,30 @@ fslmaths ${pet} -div $(echo "scale=5; ${mean_signal}/${C1_TUNED_MEAN}" | bc) ${p
 echo "Mean signal in mask_gm_for_hist.nii.gz: ${mean_signal}  --> ${C1_TUNED_MEAN} (tuned)"
 
 # Get reference value by gray matter signals
-echo -e "\nCurve fit (GM, monomodal)"
-${TAMEQDIR}/src/bash/tq-gaussfit.sh \
+echo -e "\nCurve fit (GM)"
+refgen_curve_option=""
+for i_modal in $(seq ${N_MODAL}); do
+    case "${i_modal}" in
+        1) i_prefix="mono" ;;
+        2) i_prefix="bi" ;;
+        3) i_prefix="tri" ;;
+        *) i_prefix="${i_modal}" ;;
+    esac
+
+    ${TAMEQDIR}/src/bash/tq-gaussfit.sh \
                     ${pet_tuned_gm} \
                     --mask ${subjectdir}/mask_gm_for_hist.nii.gz \
-                    --curves 1 \
+                    --curves ${i_modal} \
                     --paramset ${refpolicy} \
-                    --outfig ${subjectdir}/result_gm_monomodal_fit.png \
+                    --outfig ${subjectdir}/result_gm_${i_prefix}modal_fit.png \
                     --outfigsize ${OUTFIGSIZE} \
                     --outfigtype ${OUTFIGTYPE} \
-                    --outtext ${subjectdir}/result_gm_monomodal_fit.txt \
+                    --outtext ${subjectdir}/result_gm_${i_prefix}modal_fit.txt \
                     --outhist ${subjectdir}/target_histogram_gm.npy \
                     ${debug_option}
 
-echo -e "\nCurve fit (GM, bimodal)"
-${TAMEQDIR}/src/bash/tq-gaussfit.sh \
-                    ${pet_tuned_gm} \
-                    --mask ${subjectdir}/mask_gm_for_hist.nii.gz \
-                    --curves 2 \
-                    --paramset ${refpolicy} \
-                    --outfig ${subjectdir}/result_gm_bimodal_fit.png \
-                    --outfigsize ${OUTFIGSIZE} \
-                    --outfigtype ${OUTFIGTYPE} \
-                    --outtext ${subjectdir}/result_gm_bimodal_fit.txt \
-                    ${debug_option}
+    refgen_curve_option="${refgen_curve_option}--curve ${subjectdir}/result_gm_${i_prefix}modal_fit.txt ${i_prefix}modal "
+done
 
 
 # Create reference weight image
@@ -148,8 +148,7 @@ ${TAMEQDIR}/src/bash/tq-refgen.sh \
                     ${pet_tuned_gm} \
                     ${subjectdir}/reference_gm.nii.gz \
                     --mask ${subjectdir}/mask_gm_for_hist.nii.gz \
-                    --curve ${subjectdir}/result_gm_monomodal_fit.txt monomodal \
-                    --curve ${subjectdir}/result_gm_bimodal_fit.txt bimodal \
+                    ${refgen_curve_option} \
                     --targethist ${subjectdir}/target_histogram_gm.npy \
                     --policy ${refpolicy} \
                     ${debug_option}
@@ -182,30 +181,30 @@ fslmaths ${pet} -div $(echo "scale=5; ${mean_signal}/${C2_TUNED_MEAN}" | bc) ${p
 echo "Mean signal in mask_wm_for_hist.nii.gz: ${mean_signal}  --> ${C2_TUNED_MEAN} (tuned)"
 
 # Get reference value by gray matter signals
-echo -e "\nCurve fit (WM, monomodal)"
-${TAMEQDIR}/src/bash/tq-gaussfit.sh \
+echo -e "\nCurve fit (WM)"
+refgen_curve_option=""
+for i_modal in $(seq ${N_MODAL}); do
+    case "${i_modal}" in
+        1) i_prefix="mono" ;;
+        2) i_prefix="bi" ;;
+        3) i_prefix="tri" ;;
+        *) i_prefix="${i_modal}" ;;
+    esac
+
+    ${TAMEQDIR}/src/bash/tq-gaussfit.sh \
                     ${pet_tuned_wm} \
                     --mask ${subjectdir}/mask_wm_for_hist.nii.gz \
-                    --curves 1 \
+                    --curves ${i_modal} \
                     --paramset ${refpolicy} \
-                    --outfig ${subjectdir}/result_wm_monomodal_fit.png \
+                    --outfig ${subjectdir}/result_wm_${i_prefix}modal_fit.png \
                     --outfigsize ${OUTFIGSIZE} \
                     --outfigtype ${OUTFIGTYPE} \
-                    --outtext ${subjectdir}/result_wm_monomodal_fit.txt \
+                    --outtext ${subjectdir}/result_wm_${i_prefix}modal_fit.txt \
                     --outhist ${subjectdir}/target_histogram_wm.npy \
                     ${debug_option}
 
-echo -e "\nCurve fit (WM, bimodal)"
-${TAMEQDIR}/src/bash/tq-gaussfit.sh \
-                    ${pet_tuned_wm} \
-                    --mask ${subjectdir}/mask_wm_for_hist.nii.gz \
-                    --curves 2 \
-                    --paramset ${refpolicy} \
-                    --outfig ${subjectdir}/result_wm_bimodal_fit.png \
-                    --outfigsize ${OUTFIGSIZE} \
-                    --outfigtype ${OUTFIGTYPE} \
-                    --outtext ${subjectdir}/result_wm_bimodal_fit.txt \
-                    ${debug_option}
+    refgen_curve_option="${refgen_curve_option}--curve ${subjectdir}/result_wm_${i_prefix}modal_fit.txt ${i_prefix}modal "
+done
 
 # Create reference weight image
 echo -e "\nReference determination (WM) ..."
@@ -213,8 +212,7 @@ ${TAMEQDIR}/src/bash/tq-refgen.sh \
                     ${pet_tuned_wm} \
                     ${subjectdir}/reference_wm.nii.gz \
                     --mask ${subjectdir}/mask_wm_for_hist.nii.gz \
-                    --curve ${subjectdir}/result_wm_monomodal_fit.txt monomodal \
-                    --curve ${subjectdir}/result_wm_bimodal_fit.txt bimodal \
+                    ${refgen_curve_option} \
                     --targethist ${subjectdir}/target_histogram_wm.npy \
                     --policy ${refpolicy} \
                     ${debug_option}
