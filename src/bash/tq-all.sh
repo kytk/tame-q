@@ -32,6 +32,7 @@ fi
 cleanup() {
     status=$?
     if [[ "${status}" -eq 0 ]] && [[ "${cache}" = false ]]; then
+        rm -f ${subjectdir}/tmp*
         rm -f ${subjectdir}/tq-all_tmp*.nii.gz
         rm -f ${subjectdir}/pet_suvr_??ref_view.nii.gz
         rm -f ${subjectdir}/pet_f????.nii.gz
