@@ -40,10 +40,12 @@ shift 1
 
 # Handle necessary arguments
 cache=false
+flag_nolog=false
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --cache) cache=true; shift 1 ;;
         --debug) shift 1 ;;
+        --nolog) flag_nolog=true ; shift 1 ;;
         --*) echo "Unknown option: $1"; display_usage ; exit 1 ;;
         *) echo "Unknow option: $1"; display_usage ; exit 1 ;;
     esac
@@ -60,6 +62,19 @@ fi
 TAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
 source ${TAMEQDIR}/config.env
 MCRVER=$(cat ${SPM12STANDALONEDIR}/readme.txt | grep run_spm12.sh | grep /mathworks/home/application | awk -F/ '{print $NF}')
+
+if [[ ${flag_nolog} = "false" ]]; then
+    logfile=${subjectdir}/tq-all.log
+    exec 3>&1
+    exec > >(
+    tee >(awk -v lf="${logfile}" '{
+            print strftime("[%F %T]"), $0 >> lf
+            fflush(lf)
+        }') >&3
+    ) 2>&1
+
+    echo -e "\ntq_20_segmentation.sh starts."
+fi
 
 ### Process
 # Gunzip input if necessary

@@ -17,12 +17,14 @@ done
 cleanup() {
     status=$?
     if [[ "${status}" -eq 0 ]] && [[ "${cache}" = false ]]; then
-        rm -f ${subjectdir}/$(basename ${inpet%.nii*}_align_mean.nii.gz)
-        rm -f ${subjectdir}/$(basename ${inpet%.nii*})_f[0-9][0-9][0-9][0-9].nii.gz
         rm -f ${subjectdir}/$(basename ${inpet%.nii*})_f[0-9][0-9][0-9][0-9]_align.nii.gz
         rm -f ${subjectdir}/$(basename ${inmri%.nii*})_brain.nii.gz ${subjectdir}/$(basename ${inmri%.nii*})_brainmask.nii.gz
-        rm -f ${subjectdir}/$(basename ${inmri%.nii*})_mni_brainedge.nii.gz ${subjectdir}/$(basename ${inpet%.nii*})_brainedge4qa.nii.gz
-        rm -f ${subjectdir}/$(basename ${inpet%.nii*})_mean_brainmask.nii.gz ${subjectdir}/$(basename ${inpet%.nii*})_mean_brainedge.nii.gz
+        rm -f ${subjectdir}/$(basename ${inmri%.nii*})_mni_brainedge.nii.gz
+        rm -f ${subjectdir}/$(basename ${inpet%.nii*})_mean_brainmask.nii.gz
+        rm -f ${subjectdir}/tmp_normmi_pet_align_mean2MRI.mat
+        rm -f ${subjectdir}/tmp_normmi_pet_mean.nii.gz
+        rm -f ${subjectdir}/tmp_mutualinfo_pet_align_mean2MRI.mat
+        rm -f ${subjectdir}/tmp_mutualinfo_pet_mean.nii.gz
     fi
     jobs -pr | xargs -r kill 2>/dev/null || true
 }
@@ -52,12 +54,14 @@ ref=${FSLDIR}/data/standard/MNI152_T1_1mm_brain.nii.gz
 settingfile=${subjectdir}/tq-all-setting.env
 cache=false
 debug_option=""
+flag_nolog=false
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --ref) ref="$2"; shift 2 ;;
         --set) settingfile="$2"; shift 2 ;;
         --cache) cache=true ; shift 1 ;;
         --debug) debug_option="--debug"; shift 1 ;;
+        --nolog) flag_nolog=true ; shift 1 ;;
         --*) echo "Unknown option: $1"; display_usage ; exit 1 ;;
         *) echo "Unknow option: $1"; display_usage ; exit 1 ;;
     esac
@@ -72,6 +76,19 @@ inpet=${subjectdir}/pet.nii.gz
 if [[ -z "${inmri}" ]] || [[ -z "${inpet}" ]]; then
     display_usage
     exit 1
+fi
+
+if [[ ${flag_nolog} = "false" ]]; then
+    logfile=${subjectdir}/tq-all.log
+    exec 3>&1
+    exec > >(
+    tee >(awk -v lf="${logfile}" '{
+            print strftime("[%F %T]"), $0 >> lf
+            fflush(lf)
+        }') >&3
+    ) 2>&1
+
+    echo -e "\n$0 starts."
 fi
 
 ### Process

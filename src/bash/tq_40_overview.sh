@@ -47,11 +47,13 @@ shift 1
 # Handle necessary arguments
 settingfile=${subjectdir}/tq-all-setting.env
 cache=false
+flag_nolog=false
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --set) settingfile="$2"; shift 2 ;;
         --cache) cache=true ; shift 1 ;;
         --debug) shift 1 ;;
+        --nolog) flag_nolog=true ; shift 1 ;;
         --*) echo "Unknown option: $1"; display_usage ; exit 1 ;;
         *) echo "Unknow option: $1"; display_usage ; exit 1 ;;
     esac
@@ -74,6 +76,19 @@ pet_view_wm=${subjectdir}/pet_suvr_wmref_view.nii.gz
 tmpmat=${subjectdir}/mni_to_view.mat
 
 check_existence ${mri_mni} ${pet_mni_gm} ${pet_mni_wm}
+
+if [[ ${flag_nolog} = "false" ]]; then
+    logfile=${subjectdir}/tq-all.log
+    exec 3>&1
+    exec > >(
+    tee >(awk -v lf="${logfile}" '{
+            print strftime("[%F %T]"), $0 >> lf
+            fflush(lf)
+        }') >&3
+    ) 2>&1
+
+    echo -e "\n$0 starts."
+fi
 
 ### Process
 flirt -dof 9 -in ${mri_mni} -ref ${ref} -omat ${tmpmat} -out ${mri_view}

@@ -49,11 +49,13 @@ shift 1
 # Handle necessary arguments
 settingfile=${subjectdir}/tq-all-setting.env
 cache=false
+flag_nolog=false
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --set) settingfile="$2"; shift 2 ;;
         --cache) cache=true ; shift 1 ;;
         --debug) shift 1 ;;
+        --nolog) flag_nolog=true ; shift 1 ;;
         --*) echo "Unknown option: $1"; display_usage ; exit 1 ;;
         *) echo "Unknow option: $1"; display_usage ; exit 1 ;;
     esac
@@ -70,11 +72,26 @@ mkdir -p ${SUBJECTS_DIR}
 
 check_existence ${subjectdir}/mri_mni.nii.gz
 
+if [[ ${flag_nolog} = "false" ]]; then
+    logfile=${subjectdir}/tq-all.log
+    exec 3>&1
+    exec > >(
+    tee >(awk -v lf="${logfile}" '{
+            print strftime("[%F %T]"), $0 >> lf
+            fflush(lf)
+        }') >&3
+    ) 2>&1
+
+    echo -e "\n$0 starts."
+fi
+
 ### Process
-while [[ "$(pgrep -x segmentBS.sh -c)" -ge ${MAX_SEGMENTBS} ]]; do sleep 10s ; done
-segmentBS.sh ${ID} ${SUBJECTS_DIR} > /dev/null &
-echo "Run > segmentBS.sh ${ID} ${SUBJECTS_DIR}"
-wait
+if [[ $(find ${subjectdir}/freesurfer/${ID}/mri -name "brainstemSsLabels.v??.FSvoxelSpace.mgz" | wc -l) -lt 1 ]]; then
+    while [[ "$(pgrep -x segmentBS.sh -c)" -ge ${MAX_SEGMENTBS} ]]; do sleep 10s ; done
+    segmentBS.sh ${ID} ${SUBJECTS_DIR} > /dev/null &
+    echo "Run > segmentBS.sh ${ID} ${SUBJECTS_DIR}"
+    wait
+fi
 
 exit 0
 

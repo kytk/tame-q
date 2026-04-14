@@ -33,7 +33,6 @@ cleanup() {
     status=$?
     if [[ "${status}" -eq 0 ]] && [[ "${cache}" = false ]]; then
         rm -f ${subjectdir}/tq-all_tmp*.nii.gz
-        rm -f ${subjectdir}/mri_view.nii.gz
         rm -f ${subjectdir}/pet_suvr_??ref_view.nii.gz
         rm -f ${subjectdir}/pet_f????.nii.gz
         rm -f ${subjectdir}/pet_f????_align.nii.gz
@@ -165,55 +164,55 @@ echo -e "Directory for tame-q: ${subjectdir}"
 
 ### Process
 echo -e "\ntq_10_realign.sh starts."
-${TAMEQDIR}/src/bash/tq_10_realign.sh ${subjectdir} --cache ${debug_option}
+${TAMEQDIR}/src/bash/tq_10_realign.sh ${subjectdir} --cache ${debug_option} --nolog
 
 echo -e "\ntq_11_qa_coreg.sh starts."
-${TAMEQDIR}/src/bash/tq_11_qa_coreg.sh ${subjectdir} --cache ${debug_option}
+${TAMEQDIR}/src/bash/tq_11_qa_coreg.sh ${subjectdir} --cache ${debug_option} --nolog
 
 echo -e "\ntq_12_qa_report.sh starts."
-${TAMEQDIR}/src/bash/tq_12_qa_report.sh ${subjectdir} --cache ${debug_option}
+${TAMEQDIR}/src/bash/tq_12_qa_report.sh ${subjectdir} --cache ${debug_option} --nolog
 
 echo -e "\ntq_20_segmentation.sh starts."
-${TAMEQDIR}/src/bash/tq_20_segmentation.sh ${subjectdir} ${debug_option}
+${TAMEQDIR}/src/bash/tq_20_segmentation.sh ${subjectdir} ${debug_option} --nolog
 
 echo -e "\ntq_30_suvr_im.sh starts."
-${TAMEQDIR}/src/bash/tq_30_suvr_im.sh ${subjectdir} --cache ${debug_option}
+${TAMEQDIR}/src/bash/tq_30_suvr_im.sh ${subjectdir} --cache ${debug_option} --nolog
 
 echo -e "\ntq_40_overview.sh starts."
-${TAMEQDIR}/src/bash/tq_40_overview.sh ${subjectdir} ${debug_option}
+${TAMEQDIR}/src/bash/tq_40_overview.sh ${subjectdir} ${debug_option} --nolog
 
 if [[ ${flag_half} = "true" ]]; then
     exit 0
 fi
 
 echo -e "\ntq_50_recon-all.sh starts."
-${TAMEQDIR}/src/bash/tq_50_recon-all.sh ${subjectdir} ${debug_option}
+${TAMEQDIR}/src/bash/tq_50_recon-all.sh ${subjectdir} ${debug_option} --nolog
 
 echo -e "\ntq_51_segmentBS.sh starts."
-${TAMEQDIR}/src/bash/tq_51_segmentBS.sh ${subjectdir} ${debug_option}
+${TAMEQDIR}/src/bash/tq_51_segmentBS.sh ${subjectdir} ${debug_option} --nolog
 
 echo -e "\ntq_52_merge_wmparc.sh starts."
-${TAMEQDIR}/src/bash/tq_52_merge_wmparc.sh ${subjectdir} --cache ${debug_option}
+${TAMEQDIR}/src/bash/tq_52_merge_wmparc.sh ${subjectdir} --cache ${debug_option} --nolog
 
 echo -e "\ntq_53_get_cbref.sh starts."
-${TAMEQDIR}/src/bash/tq_53_get_cbref.sh ${subjectdir} ${debug_option}
+${TAMEQDIR}/src/bash/tq_53_get_cbref.sh ${subjectdir} ${debug_option} --nolog
 
 echo -e "\ntq_60_gen_table_wmparc_gmref.sh starts."
-${TAMEQDIR}/src/bash/tq_60_gen_table_wmparc_gmref.sh ${subjectdir} ${debug_option}
+${TAMEQDIR}/src/bash/tq_60_gen_table_wmparc_gmref.sh ${subjectdir} ${debug_option} --nolog
 
 echo -e "\ntq_61_gen_table_wmparc_wmref.sh starts."
-${TAMEQDIR}/src/bash/tq_61_gen_table_wmparc_wmref.sh ${subjectdir} ${debug_option}
+${TAMEQDIR}/src/bash/tq_61_gen_table_wmparc_wmref.sh ${subjectdir} ${debug_option} --nolog
 
 echo -e "\ntq_62_gen_table_wmparc_cbref.sh starts."
-${TAMEQDIR}/src/bash/tq_62_gen_table_wmparc_cbref.sh ${subjectdir} ${debug_option}
+${TAMEQDIR}/src/bash/tq_62_gen_table_wmparc_cbref.sh ${subjectdir} ${debug_option} --nolog
 
 echo -e "\ntq_63_gen_table_merged_gmref.sh starts."
-${TAMEQDIR}/src/bash/tq_63_gen_table_merged_gmref.sh ${subjectdir} ${debug_option}
+${TAMEQDIR}/src/bash/tq_63_gen_table_merged_gmref.sh ${subjectdir} ${debug_option} --nolog
 
 echo -e "\ntq_64_gen_table_merged_wmref.sh starts."
-${TAMEQDIR}/src/bash/tq_64_gen_table_merged_wmref.sh ${subjectdir} ${debug_option}
+${TAMEQDIR}/src/bash/tq_64_gen_table_merged_wmref.sh ${subjectdir} ${debug_option} --nolog
 
 echo -e "\ntq_65_gen_table_merged_cbref.sh starts."
-${TAMEQDIR}/src/bash/tq_65_gen_table_merged_cbref.sh ${subjectdir} ${debug_option}
+${TAMEQDIR}/src/bash/tq_65_gen_table_merged_cbref.sh ${subjectdir} ${debug_option} --nolog
 
 exit 0

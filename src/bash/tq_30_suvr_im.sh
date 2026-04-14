@@ -61,11 +61,13 @@ shift 1
 settingfile=${subjectdir}/tq-all-setting.env
 cache=false
 debug_option=""
+flag_nolog=false
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --set) settingfile="$2"; shift 2 ;;
         --cache) cache=true ; shift 1 ;;
         --debug) debug_option="--debug"; shift 1 ;;
+        --nolog) flag_nolog=true ; shift 1 ;;
         --*) echo "Unknown option: $1"; display_usage ; exit 1 ;;
         *) echo "Unknow option: $1"; display_usage ; exit 1 ;;
     esac
@@ -84,6 +86,19 @@ c2mask=${subjectdir}/c2mri_mni.nii.gz
 c2mask_thr=${subjectdir}/c2mri_mni_thr.nii.gz
 refpolicy=${subjectdir}/reference_policy.py
 check_existence ${pet} ${c1mask} ${c2mask}
+
+if [[ ${flag_nolog} = "false" ]]; then
+    logfile=${subjectdir}/tq-all.log
+    exec 3>&1
+    exec > >(
+    tee >(awk -v lf="${logfile}" '{
+            print strftime("[%F %T]"), $0 >> lf
+            fflush(lf)
+        }') >&3
+    ) 2>&1
+
+    echo -e "\n$0 starts."
+fi
 
 ### Gray matter
 # Threshold probability mask
