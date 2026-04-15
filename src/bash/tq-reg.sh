@@ -27,15 +27,15 @@ function display_usage() {
     echo "Usage: $0 <--inmri MRI> <--inpet PET> <--outmri filename> <--outpet filename> [options]"
 }
 
-calc_nonzero () {
-    voxel_fov=$(fslstats $1 -v | awk '{print $1}')
-    voxel_head=$(fslstats $1 -V | awk '{print $1}')
-    echo "${voxel_head} / ${voxel_fov}" | bc -l
+compare_mean () {
+    numerator=$(fslstats $1 -m)
+    denominator=$(fslstats $2 -m)
+    echo "${numerator} / ${denominator}" | bc -l
 }
 
 ### DEFAULT VALUE SETTING
 REFIMG=${FSLDIR}/data/standard/MNI152_T1_1mm_brain.nii.gz
-WARNINGTHR=0.2
+WARNINGTHR=0.4
 
 ### Read command line arguments
 # Check the number of command line arguments
@@ -108,8 +108,8 @@ if [[ ${COST3} = "auto" ]] || [[ ${COST3} = "normmi" ]]; then
     flirt -dof 6 -in ${outdir}/$(basename ${inpet%.nii*}_align_mean.nii.gz) -ref ${outdir}/${outmri} -searchcost normmi -cost normmi -omat ${outdir}/tmp_normmi_$(basename ${inpet%.nii*}_align_mean2MRI.mat) -out ${outdir}/tmp_normmi_${outpet}
     
     # Check whether brain is in FOV
-    nonzero_ratio_normmi=$(calc_nonzero ${outdir}/tmp_normmi_${outpet})
-    flag_warn_normmi=$(echo "${nonzero_ratio_normmi} < ${WARNINGTHR}" | bc)
+    change_ratio_normmi=$(compare_mean ${outdir}/tmp_normmi_${outpet} ${outdir}/$(basename ${inpet%.nii*}_align_mean.nii.gz))
+    flag_warn_normmi=$(echo "${change_ratio_normmi} < ${WARNINGTHR}" | bc)
     if [[ ${flag_warn_normmi} = 1 ]]; then
         echo "Warning: PET image coregistration might be failed (normmi)."
         if [[ ${COST3} = "auto" ]]; then
@@ -128,8 +128,8 @@ fi
 flirt -dof 6 -in ${outdir}/$(basename ${inpet%.nii*}_align_mean.nii.gz) -ref ${outdir}/${outmri} -searchcost mutualinfo -cost mutualinfo -omat ${outdir}/tmp_mutualinfo_$(basename ${inpet%.nii*}_align_mean2MRI.mat) -out ${outdir}/tmp_mutualinfo_${outpet}
 
 # Check whether brain is in FOV
-nonzero_ratio_mutualinfo=$(calc_nonzero ${outdir}/tmp_mutualinfo_${outpet})
-flag_warn_mutualinfo=$(echo "${nonzero_ratio_mutualinfo} < ${WARNINGTHR}" | bc)
+change_ratio_mutualinfo=$(compare_mean ${outdir}/tmp_mutualinfo_${outpet} ${outdir}/$(basename ${inpet%.nii*}_align_mean.nii.gz))
+flag_warn_mutualinfo=$(echo "${change_ratio_mutualinfo} < ${WARNINGTHR}" | bc)
 if [[ ${flag_warn_mutualinfo} = 1 ]]; then
     echo "Warning: PET image coregistration might be failed (mutualinfo)."
 fi
@@ -142,7 +142,7 @@ fi
 
 # Both mutualinfo and normmi might not work well...
 echo "Both mutualinfo and normmi might not work well in PET-to-MRI coregistration."
-if [[ $(echo "${nonzero_ratio_normmi} > ${nonzero_ratio_mutualinfo}" | bc) = 1 ]]; then
+if [[ $(echo "${change_ratio_normmi} > ${change_ratio_mutualinfo}" | bc) = 1 ]]; then
     echo "Result with normmi is accepted."
     mv ${outdir}/tmp_normmi_$(basename ${inpet%.nii*}_align_mean2MRI.mat) ${outdir}/$(basename ${inpet%.nii*}_align_mean2MRI.mat)
     mv ${outdir}/tmp_normmi_${outpet} ${outdir}/${outpet}
