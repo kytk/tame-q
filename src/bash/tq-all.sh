@@ -72,6 +72,7 @@ inpet=""
 refpolicy=${TAMEQDIR}/src/python/reference_policy.py
 settingfile=${TAMEQDIR}/env/tq-all-setting.env
 outdir=$(pwd)
+flag_prep=false
 flag_half=false
 cache=false
 debug_option=""
@@ -83,6 +84,7 @@ while [ "$#" -gt 0 ]; do
         --set) settingfile="$2"; shift 2 ;;
         --refpolicy) refpolicy="$2"; shift 2 ;;
         --outdir) outdir="${2%/}"; shift 2 ;;
+        --prep) flag_prep=true; shift 1 ;;
         --half) flag_half=true; shift 1 ;;
         --cache) cache=true; shift 1 ;;
         --debug) debug_option="--debug"; shift 1 ;;
@@ -162,6 +164,10 @@ fslreorient2std ${inpet} ${subjectdir}/pet.nii.gz
 ${TAMEQDIR}/src/python/reorient2LAS.py ${subjectdir}/pet.nii.gz ${subjectdir}/pet.nii.gz
 
 echo -e "Directory for tame-q: ${subjectdir}"
+
+if [[ ${flag_prep} = "true" ]]; then
+    exit 0
+fi
 
 ### Process
 echo -e "\ntq_10_realign.sh starts."
