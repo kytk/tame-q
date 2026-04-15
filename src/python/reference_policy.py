@@ -52,13 +52,11 @@ def determine_parameter(N_curve, bin_centers, bin_counts):
     if N_curve==1:
         initparam=[np.max(bin_counts), bin_centers[np.argmax(bin_counts)], 0.5]
         param_bounds=[[0, bin_centers[0], 0], [np.inf, bin_centers[-1], np.inf]]
-    elif N_curve==2:
-        initparam=[np.max(bin_counts)/N_curve, 1.0, 0.2, np.max(bin_counts)/N_curve, 1.5, 0.2]
-        param_bounds=[[0]*6, [1.5*np.max(bin_counts), 5, 5, 1.5*np.max(bin_counts), 10, 5]]
     else:
         initparam=[]
+        tmpbins=np.linspace(bin_centers[0], bin_centers[-1], N_curve+2)
         for i in range(1, N_curve+1):
-            initparam=initparam+[np.max(bin_counts)/N_curve, 0.8+i*0.2, 1]
+            initparam=initparam+[np.max(bin_counts)/N_curve, tmpbins[i], 1]
         param_bounds=[[0]*(3*N_curve), [1.5*np.max(bin_counts), bin_centers[-1], np.inf]*N_curve]
     return initparam, param_bounds
 
