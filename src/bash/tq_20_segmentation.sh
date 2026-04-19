@@ -81,21 +81,25 @@ fi
 flag_gz=false
 if [[ "${inmri: -3}" = ".gz" ]]; then
     flag_gz=true
-    gunzip -kf ${inmri}
+    TMPDIR1=$(mktemp -d)
+    cp ${inmri} ${TMPDIR1}
+    gunzip ${TMPDIR1}/$(basename ${inmri})
+    mv ${TMPDIR1}/$(basename ${inmri%.gz}) ${subjectdir}
+    rm -rf ${TMPDIR1}
 fi
 
-# Copy .m file to pwd
-cp -f ${TAMEQDIR}/src/matlab/segmentation.m ${subjectdir}
-
-# Replace MR_IMAGE_PATH with input MRI path in segmentation.m file
-sed -i "/img/s#MR_IMAGE_PATH#${inmri%.gz}#g" ${subjectdir}/segmentation.m
+# Replace MR_IMAGE_PATH with input MRI path in segmentation.m file and place it in subjectdir
+sed "/img/s#MR_IMAGE_PATH#${inmri%.gz}#g" ${TAMEQDIR}/src/matlab/segmentation.m > ${subjectdir}/segmentation.m
 
 # Run segmentation.m
 ${SPM12STANDALONEDIR}/run_spm12.sh ${MCRDIR}/${MCRVERSION} batch ${subjectdir}/segmentation.m > /dev/null
 
 # Gzip SPM output
-gzip -f ${subjectdir}/c1$(basename ${inmri%.gz})
-gzip -f ${subjectdir}/c2$(basename ${inmri%.gz})
+TMPDIR2=$(mktemp -d)
+cp ${subjectdir}/c1$(basename ${inmri%.gz}) ${subjectdir}/c2$(basename ${inmri%.gz}) ${TMPDIR2}
+gzip -f ${TMPDIR2}/c1$(basename ${inmri%.gz})
+gzip -f ${TMPDIR2}/c2$(basename ${inmri%.gz})
+mv ${TMPDIR2}/c1$(basename ${inmri}) ${TMPDIR2}/c2$(basename ${inmri}) ${subjectdir}
+rm -rf ${TMPDIR2}
 
 exit 0
-

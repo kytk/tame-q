@@ -122,8 +122,7 @@ fi
 
 ### Initial preparation
 mkdir -p ${subjectdir}/orig
-cp ${settingfile} ${subjectdir}/tq-all-setting.env
-sed -i "0,/### Process setting/ s//### Individual setting\nTQID=${id}\n\n&/" ${subjectdir}/tq-all-setting.env
+sed "0,/### Process setting/ s//### Individual setting\nTQID=${id}\n\n&/" ${settingfile} > ${subjectdir}/tq-all-setting.env
 cp ${refpolicy} ${subjectdir}/reference_policy.py
 
 logfile=${subjectdir}/tq-all.log
