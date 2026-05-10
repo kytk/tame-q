@@ -109,61 +109,61 @@ if [[ ${run_flag} = false ]]; then
 fi
 
 if [[ "${step}" -lt 20 ]]; then
-    ${TAMEQDIR}/src/bash/tq_10_realign.sh ${subjectdir} --cache ${debug_option}
-    ${TAMEQDIR}/src/bash/tq_11_qa_coreg.sh ${subjectdir} --cache ${debug_option}
-    ${TAMEQDIR}/src/bash/tq_12_qa_report.sh ${subjectdir} --cache ${debug_option}
+    ${TAMEQDIR}/src/bash/tq_10_realign.sh ${subjectdir} --cache ${debug_option} --nolog
+    ${TAMEQDIR}/src/bash/tq_11_qa_coreg.sh ${subjectdir} --cache ${debug_option} --nolog
+    ${TAMEQDIR}/src/bash/tq_12_qa_report.sh ${subjectdir} --cache ${debug_option} --nolog
 fi
 
 if [[ "${step}" -lt 30 ]]; then
-    ${TAMEQDIR}/src/bash/tq_20_segmentation.sh ${subjectdir} ${debug_option}
+    ${TAMEQDIR}/src/bash/tq_20_segmentation.sh ${subjectdir} ${debug_option} --nolog
 fi
 
 if [[ "${step}" -lt 40 ]]; then
-    ${TAMEQDIR}/src/bash/tq_30_suvr_im.sh ${subjectdir} --cache ${debug_option}
+    ${TAMEQDIR}/src/bash/tq_30_suvr_im.sh ${subjectdir} --cache ${debug_option} --nolog
 fi
 
 if [[ "${step}" -lt 50 ]]; then
-    ${TAMEQDIR}/src/bash/tq_40_overview.sh ${subjectdir} ${debug_option}
+    ${TAMEQDIR}/src/bash/tq_40_overview.sh ${subjectdir} ${debug_option} --nolog
 fi
 
 if [[ "${step}" -lt 51 ]]; then
-    ${TAMEQDIR}/src/bash/tq_50_recon-all.sh ${subjectdir} ${debug_option}
+    ${TAMEQDIR}/src/bash/tq_50_recon-all.sh ${subjectdir} ${debug_option} --nolog
 fi
 
 if [[ "${step}" -lt 52 ]]; then
-    ${TAMEQDIR}/src/bash/tq_51_segmentBS.sh ${subjectdir} ${debug_option}
+    ${TAMEQDIR}/src/bash/tq_51_segmentBS.sh ${subjectdir} ${debug_option} --nolog
 fi
 
 if [[ "${step}" -lt 53 ]]; then
-    ${TAMEQDIR}/src/bash/tq_52_merge_wmparc.sh ${subjectdir} --cache ${debug_option}
+    ${TAMEQDIR}/src/bash/tq_52_merge_wmparc.sh ${subjectdir} --cache ${debug_option} --nolog
 fi
 
 if [[ "${step}" -lt 54 ]]; then
-    ${TAMEQDIR}/src/bash/tq_53_get_cbref.sh ${subjectdir} ${debug_option}
+    ${TAMEQDIR}/src/bash/tq_53_get_cbref.sh ${subjectdir} ${debug_option} --nolog
 fi
 
 if [[ "${step}" -lt 61 ]]; then
-    ${TAMEQDIR}/src/bash/tq_60_gen_table_wmparc_gmref.sh ${subjectdir} ${debug_option}
+    ${TAMEQDIR}/src/bash/tq_60_gen_table_wmparc_gmref.sh ${subjectdir} ${debug_option} --nolog
 fi
 
 if [[ "${step}" -lt 62 ]]; then
-    ${TAMEQDIR}/src/bash/tq_61_gen_table_wmparc_wmref.sh ${subjectdir} ${debug_option}
+    ${TAMEQDIR}/src/bash/tq_61_gen_table_wmparc_wmref.sh ${subjectdir} ${debug_option} --nolog
 fi
 
 if [[ "${step}" -lt 63 ]]; then
-    ${TAMEQDIR}/src/bash/tq_62_gen_table_wmparc_cbref.sh ${subjectdir} ${debug_option}
+    ${TAMEQDIR}/src/bash/tq_62_gen_table_wmparc_cbref.sh ${subjectdir} ${debug_option} --nolog
 fi
 
 if [[ "${step}" -lt 64 ]]; then
-    ${TAMEQDIR}/src/bash/tq_63_gen_table_merged_gmref.sh ${subjectdir} ${debug_option}
+    ${TAMEQDIR}/src/bash/tq_63_gen_table_merged_gmref.sh ${subjectdir} ${debug_option} --nolog
 fi
 
 if [[ "${step}" -lt 65 ]]; then
-    ${TAMEQDIR}/src/bash/tq_64_gen_table_merged_wmref.sh ${subjectdir} ${debug_option}
+    ${TAMEQDIR}/src/bash/tq_64_gen_table_merged_wmref.sh ${subjectdir} ${debug_option} --nolog
 fi
 
 if [[ "${step}" -lt 66 ]]; then
-    ${TAMEQDIR}/src/bash/tq_65_gen_table_merged_cbref.sh ${subjectdir} ${debug_option}
+    ${TAMEQDIR}/src/bash/tq_65_gen_table_merged_cbref.sh ${subjectdir} ${debug_option} --nolog
 fi
 
 exit 0
