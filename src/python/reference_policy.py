@@ -54,11 +54,19 @@ def determine_parameter(N_curve, bin_centers, bin_counts):
         param_bounds=[[0, bin_centers[0], 0], [np.inf, bin_centers[-1], np.inf]]
     else:
         initparam=[]
-        tmpbins=np.linspace(bin_centers[0], bin_centers[-1], N_curve+2)
         for i in range(1, N_curve+1):
-            initparam=initparam+[np.max(bin_counts)/N_curve, tmpbins[i], 1]
+            initparam=initparam+[np.max(bin_counts)/N_curve, get_percentile_bin(i/(N_curve+1), bin_centers, bin_counts), 1]
         param_bounds=[[0]*(3*N_curve), [1.5*np.max(bin_counts), bin_centers[-1], np.inf]*N_curve]
     return initparam, param_bounds
+
+def get_percentile_bin(p, bin_centers, bin_counts):
+    bin_cumulated=np.array(bin_counts)
+    for i in range(1, len(bin_cumulated)):
+        bin_cumulated[i]=bin_cumulated[i]+bin_cumulated[i-1]
+    bin_cumulated=bin_cumulated/bin_cumulated[-1]
+    idx=np.argmax(bin_cumulated>p)
+    
+    return bin_centers[idx]
 
 if __name__ == "__main__":
     try:
