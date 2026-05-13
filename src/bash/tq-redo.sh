@@ -95,6 +95,11 @@ if [[ "${force}" -lt "${step}" ]]; then
     step=${force}
 fi
 
+if [[ "${step}" -ge 99 ]]; then
+    echo "All tame-q processes have been done in ${subjectdir}."
+    exit 0
+fi
+
 if [[ ${run_flag} = false ]]; then
     while true; do
         echo "Run scripts from tq_${step} onward in ${subjectdir}? [y/n]"
