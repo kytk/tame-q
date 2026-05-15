@@ -87,6 +87,9 @@ fi
 
 ### Process
 if [[ ! -e ${subjectdir}/freesurfer/${ID}/mri/wmparc.mgz ]]; then
+    if [[ -e ${subjectdir}/freesurfer/${ID} ]]; then
+        rm -rf ${subjectdir}/freesurfer/${ID}
+    fi
     recon-all -i ${subjectdir}/mri_mni.nii.gz -s ${ID} -all -qcache > /dev/null &
     echo "RUN > recon-all -i ${subjectdir}/mri_mni.nii.gz -s ${ID} -all -qcache"
     wait
