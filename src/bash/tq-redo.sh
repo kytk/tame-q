@@ -124,7 +124,7 @@ if [[ "${step}" -lt 30 ]]; then
 fi
 
 if [[ "${step}" -lt 40 ]]; then
-    ${TAMEQDIR}/src/bash/tq_30_suvr_im.sh ${subjectdir} --cache ${debug_option} --nolog
+    ${TAMEQDIR}/src/bash/tq_30_suvr_im.sh ${subjectdir} --fallback_without_bounds --cache ${debug_option} --nolog
 fi
 
 if [[ "${step}" -lt 50 ]]; then

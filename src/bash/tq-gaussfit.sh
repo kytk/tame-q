@@ -57,6 +57,7 @@ while [ "$#" -gt 0 ]; do
         --outfigtype) outfigtype="$2"; shift 2 ;;
         --outtext) outtext_option="--outtext $2"; shift 2 ;;
         --outhist) outhist_option="--outhist $2"; shift 2 ;;
+	--fallback_without_bounds) fallback_option="--fallback_without_bounds"; shift 1 ;;
         --cache) cache=true; shift 1 ;;
         --debug) shift 1 ;;
         --*) echo "Unknown option: $1"; display_usage ; exit 1 ;;
@@ -88,5 +89,6 @@ python3 ${TAMEQDIR}/src/python/nifti_gmm.py \
     --outfigsize ${outfigsize} \
     --outfigtype ${outfigtype} \
     ${outtext_option} \
-    ${outhist_option}
+    ${outhist_option} \
+    ${fallback_option}
 

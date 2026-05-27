@@ -141,6 +141,10 @@ echo "version: $(cat ${TAMEQDIR}/INFO)"
 echo "commit: $(${TAMEQDIR}/src/bash/tq-hash.sh)"
 source ${subjectdir}/tq-all-setting.env
 
+if [[ "${CURVEFIT_FALLBACK}" = "true" ]]; then
+    fallback_option="--fallback_without_bounds"
+fi
+
 echo "tq-all.sh starts."
 echo "ID: ${id}"
 echo "PET: ${inpet}"
@@ -182,7 +186,7 @@ echo -e "\ntq_20_segmentation.sh starts."
 ${TAMEQDIR}/src/bash/tq_20_segmentation.sh ${subjectdir} ${debug_option} --nolog
 
 echo -e "\ntq_30_suvr_im.sh starts."
-${TAMEQDIR}/src/bash/tq_30_suvr_im.sh ${subjectdir} --cache ${debug_option} --nolog
+${TAMEQDIR}/src/bash/tq_30_suvr_im.sh ${subjectdir} --fallback_without_bounds --cache ${debug_option} --nolog
 
 echo -e "\ntq_40_overview.sh starts."
 ${TAMEQDIR}/src/bash/tq_40_overview.sh ${subjectdir} ${debug_option} --nolog

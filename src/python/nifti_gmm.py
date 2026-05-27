@@ -88,7 +88,7 @@ def reshape_popt(popt):
     out=out[np.argsort(out[:, 1])]
     return out
     
-def gmm_fit(bin_centers, bin_counts, n=1, params=None, bounds=None):
+def gmm_fit(bin_centers, bin_counts, n=1, params=None, bounds=None, fallback_without_bounds=False):
     if len(params)==0:
         init_a=bin_counts.max()*pow(2*np.pi, 1/2)/n
         for i in range(n):
@@ -100,10 +100,23 @@ def gmm_fit(bin_centers, bin_counts, n=1, params=None, bounds=None):
         bounds[1]=[np.inf, np.inf, np.inf]*n
         
     func_gmm_n=get_func_gmm_n(n)
+    
+    flag_fallback=False
+    if fallback_without_bounds == True:
+        try:
+            popt, pcov=curve_fit(func_gmm_n, bin_centers, bin_counts, p0=params, bounds=bounds)
+        except:
+            flag_fallback=True
+            popt, pcov=curve_fit(func_gmm_n, bin_centers, bin_counts, p0=params)
+    else:
+        popt, pcov=curve_fit(func_gmm_n, bin_centers, bin_counts, p0=params, bounds=bounds)
 
-    popt, pcov=curve_fit(func_gmm_n, bin_centers, bin_counts, p0=params, bounds=bounds)
     popt=reshape_popt(popt)
-    return popt
+    
+    if fallback_without_bounds==True:
+        return popt, flag_fallback
+    else:
+        return popt
 
 def get_gaussian(a, b, c):
   def gaussian(x):
@@ -277,6 +290,7 @@ def main():
     parser.add_argument('--outfigsize', type=float, default=4, help='Save curve fit result as defined here')
     parser.add_argument('--outtext', type=str, help='Save curve-fit-parameters text file as defined here')
     parser.add_argument('--outhist', type=str, help='Save histogram of raw data')
+    parser.add_argument('--fallback_without_bounds', action="store_true", help='Execute fallback curve_fit without bounds when curve_fit fails')
 
     args=parser.parse_args()
     
@@ -296,6 +310,7 @@ def main():
     outfigsize=args.outfigsize
     outtext=args.outtext
     outhist=args.outhist
+    fallback_without_bounds=args.fallback_without_bounds
 
     in_mat, in_header, in_affine=load_nifti(inputfile)
     if maskfile!=None:
@@ -350,12 +365,19 @@ def main():
     initparam, param_bounds=determine_parameter(N_curve, bin_centers, bin_counts)
     
     # Print curve fit setting
-    settingtext=get_curve_fit_setting_text(input=inputfile, mask=maskfile, mean=M_norm, thrp=thrp, uthrp=uthrp, bins=bin_centers, params=initparam, bounds=param_bounds)
-    print(textwrap.dedent(settingtext).strip())
+    #settingtext=get_curve_fit_setting_text(input=inputfile, mask=maskfile, mean=M_norm, thrp=thrp, uthrp=uthrp, bins=bin_centers, params=initparam, bounds=param_bounds)
+    #print(textwrap.dedent(settingtext).strip())
     
     # Curve fit
-    fitparam=gmm_fit(bin_centers, bin_counts, n=N_curve, params=initparam, bounds=param_bounds)
+    fitparam, flag_fallback=gmm_fit(bin_centers, bin_counts, n=N_curve, params=initparam, bounds=param_bounds, fallback_without_bounds=fallback_without_bounds)
     
+    if flag_fallback==True:
+        param_bounds=[[-np.inf]*(3*N_curve), [np.inf]*(3*N_curve)]
+
+    # Print curve fit setting
+    settingtext=get_curve_fit_setting_text(input=inputfile, mask=maskfile, mean=M_norm, thrp=thrp, uthrp=uthrp, bins=bin_centers, params=initparam, bounds=param_bounds)
+    print(textwrap.dedent(settingtext).strip())
+
     # Get summary text
     resulttexts=get_curve_fit_result_text(fitparam)
     mixture_curve=get_mixture_curve(bin_centers, fitparam)
