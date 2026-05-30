@@ -38,6 +38,9 @@ cleanup() {
         rm -f ${subjectdir}/pet_f????.nii.gz
         rm -f ${subjectdir}/pet_f????_align.nii.gz
     fi
+    if [[ "${status}" -ne 0 ]]; then
+        echo "${id}: tq-all.sh finished with ERRORs."
+    fi
     jobs -pr | xargs -r kill 2>/dev/null || true
 }
 
