@@ -51,6 +51,9 @@ function display_usage() {
     echo "  --pet <pet_input>"
     echo "  --outdir <dirpath>"
     echo "  --set <settingfile>"
+    echo "  --refpolicy <refpolicyfile>"
+    echo "  --prep"
+    echo "  --half"
     echo "  --cache"
     echo "  --debug"
 }

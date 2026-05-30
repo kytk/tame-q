@@ -26,7 +26,11 @@ REFIMG=${FSLDIR}/data/standard/MNI152_T1_1mm_brain.nii.gz
 
 ### Define functions
 function display_usage() {
-    echo "Usage: $0 <input> <output> [--ref reference] [--outmat filename] [--outdir directory] [--cache]"
+    echo "Usage: $0 <input> <output> [options]"
+    echo "  --ref <reference image>"
+    echo "  --outmat filename"
+    echo "  --outdir directory"
+    echo "  --cache"
 }
 
 ### Read command line arguments

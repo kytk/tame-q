@@ -20,7 +20,7 @@ trap cleanup EXIT INT TERM
 
 ### Define functions
 function display_usage() {
-    echo "Usage: $0 <mask> <output> [--x Lx] [--y Ly] [--z Lz] [--cube E]"
+    echo "Usage: $0 <mask> <output> [--x Lx] [--y Ly] [--z Lz] [--cube E] [options]"
 }
 
 function randomphrase() {

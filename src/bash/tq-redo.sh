@@ -22,7 +22,7 @@ trap 'cleanup; exit 143' TERM
 
 ### Define functions
 function display_usage() {
-    echo "Usage: $0 <subjectdir> [--force number] [--cache] [--debug]"
+    echo "Usage: $0 <subjectdir> [--force number] [--run] [--cache] [--debug]"
 }
 
 function check_existence() {

@@ -23,7 +23,7 @@ trap cleanup EXIT INT TERM
 
 ### Define functions
 function display_usage() {
-    echo "Usage: $0 <input> <output> [options]"
+    echo "Usage: $0 <wmparc> <bsparc> <output> [options]"
 }
 
 function randomphrase() {

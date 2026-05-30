@@ -66,8 +66,8 @@ flag_nolog=false
 while [ "$#" -gt 0 ]; do
     case "$1" in
         --set) settingfile="$2"; shift 2 ;;
-	--fallback_without_bounds) fallback_option="--fallback_without_bounds"; shift 1 ;;
-	--cache) cache=true ; shift 1 ;;
+        --fallback_without_bounds) fallback_option="--fallback_without_bounds"; shift 1 ;;
+        --cache) cache=true ; shift 1 ;;
         --debug) debug_option="--debug"; shift 1 ;;
         --nolog) flag_nolog=true ; shift 1 ;;
         --*) echo "Unknown option: $1"; display_usage ; exit 1 ;;
@@ -139,7 +139,7 @@ for i_modal in $(seq ${N_MODAL}); do
                     --outtext ${subjectdir}/result_gm_${i_prefix}modal_fit.txt \
                     --outhist ${subjectdir}/target_histogram_gm.npy \
                     ${fallback_option} \
-		    ${debug_option}
+                    ${debug_option}
 
     refgen_curve_option="${refgen_curve_option}--curve ${subjectdir}/result_gm_${i_prefix}modal_fit.txt ${i_prefix}modal "
 done
@@ -204,7 +204,7 @@ for i_modal in $(seq ${N_MODAL}); do
                     --outtext ${subjectdir}/result_wm_${i_prefix}modal_fit.txt \
                     --outhist ${subjectdir}/target_histogram_wm.npy \
                     ${fallback_option} \
-		    ${debug_option}
+                    ${debug_option}
 
     refgen_curve_option="${refgen_curve_option}--curve ${subjectdir}/result_wm_${i_prefix}modal_fit.txt ${i_prefix}modal "
 done

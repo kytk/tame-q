@@ -13,7 +13,7 @@ SCALE=5
 
 ### Define functions
 function display_usage() {
-    echo "Usage: $0 < mask1 > < mask2 >"
+    echo "Usage: $0 <mask1> <mask2>"
 }
 
 ### Read command line arguments

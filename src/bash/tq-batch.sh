@@ -10,7 +10,16 @@ done
 
 ### Define functions
 function display_usage() {
-    echo "Usage: $0 <datadir> [options]"
+    echo "Usage: $0 [options]"
+    echo "  --suffix <t1w_suffix> (default: _t1w)"
+    echo "  --outdir <outdir> (default: current directory)"
+    echo "  --parallel <N> (default: 1)"
+    echo "  --refpolicy <refpolicyfile>"
+    echo "  --set <settingfile>"
+    echo "  --half"
+    echo "  --cache"
+    echo "  --debug"
+    echo "  --help"
 }
 
 # Load environment variable
@@ -39,8 +48,8 @@ while [ "$#" -gt 0 ]; do
     case "$1" in
         --suffix) t1w_suffix="${2%.nii*}"; shift 2 ;;
         --outdir) outdir="$2"; shift 2 ;;
-	--parallel) n_parallel="$2"; shift 2 ;;
-	--refpolicy) refpolicy="$2"; shift 2 ;;
+        --parallel) n_parallel="$2"; shift 2 ;;
+        --refpolicy) refpolicy="$2"; shift 2 ;;
         --set) settingfile="$2"; shift 2 ;;
         --half) half_option="--half"; shift 1 ;;
         --cache) cache_option="--cache"; shift 1 ;;

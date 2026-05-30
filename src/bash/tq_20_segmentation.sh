@@ -26,7 +26,7 @@ trap cleanup EXIT INT TERM
 
 ### Define functions
 function display_usage() {
-    echo "Usage: $0 <subject dir>"
+    echo "Usage: $0 <subject dir> [options]"
 }
 
 ### Read command line arguments

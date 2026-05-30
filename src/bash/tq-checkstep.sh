@@ -20,6 +20,10 @@ trap cleanup EXIT INT TERM
 ### Define functions
 function display_usage() {
     echo "Usage: $0 <subjectdir> [options]"
+    echo "  --quick"
+    echo "  --silent"
+    echo "  --cache"
+    echo "  --debug"
 }
 
 # Set variable

@@ -22,6 +22,9 @@ trap cleanup EXIT INT TERM
 ### Define functions
 function display_usage() {
     echo "Usage: $0 <input> <output> [options]"
+    echo "  --cost {mutualinfo,corratio,normcorr,normmi,leastsq} (default: mutualinfo)"
+    echo "  --cache"
+    echo "  --debug"
 }
 
 ### Read command line arguments
@@ -43,6 +46,7 @@ fi
 
 # Handle necessary arguments
 cache=false
+COST=mutualinfo
 while [[ "$#" -gt 0 ]]; do
     case "$1" in
         --cost) COST="$2"; shift 2 ;;

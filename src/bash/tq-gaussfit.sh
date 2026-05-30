@@ -20,7 +20,19 @@ trap cleanup EXIT INT TERM
 
 ### Define functions
 function display_usage() {
-    echo "Usage: $0 <image> <--curves N> [--mask mask] [--norm mean_value] [--outfig filename] [--outtext filename] [--cache]"
+    echo "Usage: $0 <image> <--curves N> [options]"
+    echo "  --mask <mask>"
+    echo "  --norm <mean value>"
+    echo "  --outfig <filename>"
+    echo "  --outtext <filename>"
+    echo "  --binwidth <width> (default: 0.025)"
+    echo "  --paramset <pyfile>"
+    echo "  --outfigsize <size> (default: 4)"
+    echo "  --outfigtype {1,2,3} (default: 1)"
+    echo "  --outhist <filename>"
+    echo "  --fallback_without_bounds"
+    echo "  --cache"
+    echo "  --debug"
 }
 
 ### Read command line arguments
@@ -57,7 +69,7 @@ while [ "$#" -gt 0 ]; do
         --outfigtype) outfigtype="$2"; shift 2 ;;
         --outtext) outtext_option="--outtext $2"; shift 2 ;;
         --outhist) outhist_option="--outhist $2"; shift 2 ;;
-	--fallback_without_bounds) fallback_option="--fallback_without_bounds"; shift 1 ;;
+        --fallback_without_bounds) fallback_option="--fallback_without_bounds"; shift 1 ;;
         --cache) cache=true; shift 1 ;;
         --debug) shift 1 ;;
         --*) echo "Unknown option: $1"; display_usage ; exit 1 ;;
@@ -74,6 +86,9 @@ fi
 TAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
 SCRIPTDIR=$(cd $(dirname $0); pwd)
 source ${TAMEQDIR}/config.env
+if [[ -z "${paramset}" ]]; then
+    paramset="${TAMEQDIR}/src/python/reference_policy.py"
+fi
 
 ### Process
 # Curve fit
