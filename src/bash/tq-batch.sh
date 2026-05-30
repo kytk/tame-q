@@ -28,6 +28,7 @@ fi
 
 t1w_suffix="_t1w"
 outdir=${datadir}/tq_result_$(date +%Y%m%d_%H%M)
+n_parallel=""
 refpolicy=${TAMEQDIR}/src/python/reference_policy.py
 settingfile=${TAMEQDIR}/env/tq-all-setting.env
 half_option=""
@@ -38,7 +39,8 @@ while [ "$#" -gt 0 ]; do
     case "$1" in
         --suffix) t1w_suffix="${2%.nii*}"; shift 2 ;;
         --outdir) outdir="$2"; shift 2 ;;
-        --refpolicy) refpolicy="$2"; shift 2 ;;
+	--parallel) n_parallel="$2"; shift 2 ;;
+	--refpolicy) refpolicy="$2"; shift 2 ;;
         --set) settingfile="$2"; shift 2 ;;
         --half) half_option="--half"; shift 1 ;;
         --cache) cache_option="--cache"; shift 1 ;;
@@ -50,6 +52,10 @@ while [ "$#" -gt 0 ]; do
 done
 
 source ${settingfile}
+if [[ -n "${n_parallel}" ]]; then
+    MAX_TQALL=${n_parallel}
+fi
+
 
 # Check license.txt
 if [[ ! -e ${FS_LICENSE} ]]; then 
