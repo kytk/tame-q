@@ -10,15 +10,17 @@ done
 
 cleanup() {
     status=$?
-    if [[ "${status}" -eq 0 ]] && [[ "${cache}" = false ]]; then
-        rm -f ${subjectdir}/tmp*
-        rm -f ${subjectdir}/tq-all_tmp*.nii.gz
-        rm -f ${subjectdir}/pet_suvr_??ref_view.nii.gz
-        rm -f ${subjectdir}/pet_f????.nii.gz
-        rm -f ${subjectdir}/pet_f????_align.nii.gz
-    fi
-    if [[ "${status}" -ne 0 ]]; then
-        echo "${id}: tq-redo.sh finished with ERRORs."
+    if [[ "${status}" -eq 0 ]]; then
+        echo "${TQID}: tq-redo.sh finished without errors."
+        if [[ "${cache}" = false ]]; then
+            rm -f ${subjectdir}/tmp*
+            rm -f ${subjectdir}/tq-all_tmp*.nii.gz
+            rm -f ${subjectdir}/pet_suvr_??ref_view.nii.gz
+            rm -f ${subjectdir}/pet_f????.nii.gz
+            rm -f ${subjectdir}/pet_f????_align.nii.gz
+        fi
+    else
+        echo "${TQID}: tq-redo.sh finished with ERRORs."
     fi
     jobs -pr | xargs -r kill 2>/dev/null || true
 }
