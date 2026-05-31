@@ -15,6 +15,7 @@ done
 
 cleanup() {
     status=$?
+    rm -rf ${subjectdir}/freesurfer/fsaverage
     if [[ "${status}" -eq 0 ]]; then
         :
     fi
