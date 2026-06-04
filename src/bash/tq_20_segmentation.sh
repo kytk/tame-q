@@ -1,73 +1,105 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 ### TAME-Q tq_20_segmentation.sh
-### Objectives:
-# This script generates probability maps for gray matter and white matter from T1-weighted images.
-
-### Prerequisites:
-# - FSL: Required for image processing.
-# - SPM12: Required for generating probability maps.
-
-### Usage:
-# 1. Ensure that images (${ID}_t1w_r.nii) are in the directory.
-# 2. Run the script: tq_20_segmentation.sh
-
-### Main Outputs:
-# c1${ID}_t1w_r.nii: probability map of gray matter
-# c2${ID}_t1w_r.nii: probability map of white matter
-# c1MABB_001_t1w_r_q.nii.gz: probability map of gray matter after being masked by white matter mask
 
 ### License:
 # This script is distributed under the GNU General Public License version 3.
 # See LICENSE file for details.
 
-# K. Nemoto and K. Nakayama 11 Jul 2023
+# 8 Mar 2026 K.Nakayama and K.Nemoto
 
-# For Debug
-#set -x
+set -euo pipefail
+for arg in "$@"; do
+    if [[ "${arg}" = "--debug" ]]; then
+        set -x
+    fi
+done
 
-# Load environment variable
+cleanup() {
+    status=$?
+    if [[ "${status}" -eq 0 ]]; then
+        rm -f ${inmri%.gz} ${subjectdir}/segmentation.m
+    fi
+    jobs -pr | xargs -r kill 2>/dev/null || true
+}
+trap cleanup EXIT INT TERM
+
+### Define functions
+function display_usage() {
+    echo "Usage: $0 <subject dir> [options]"
+}
+
+### Read command line arguments
+# Check the number of command line arguments
+if [[ "$#" -lt 1 ]]; then
+    display_usage
+    exit 1
+fi
+subjectdir="$1"
+shift 1
+
+# Handle necessary arguments
+cache=false
+flag_nolog=false
+while [ "$#" -gt 0 ]; do
+    case "$1" in
+        --cache) cache=true; shift 1 ;;
+        --debug) shift 1 ;;
+        --nolog) flag_nolog=true ; shift 1 ;;
+        --*) echo "Unknown option: $1"; display_usage ; exit 1 ;;
+        *) echo "Unknow option: $1"; display_usage ; exit 1 ;;
+    esac
+done
+
+inmri=${subjectdir}/mri_mni.nii.gz
+
+if [[ ! -e "${inmri}" ]]; then
+    echo "Error: Unable to find ${outdir}"
+    exit 1
+fi
+
+# Set variable
 TAMEQDIR=$(cd $(dirname "$(realpath "$0")") ; cd ../.. ; pwd)
 source ${TAMEQDIR}/config.env
-
-# Prevent error
-if [[ "${TAMEQDIR}" = $PWD ]] ; then
-  echo "Don't run this script in this directory"
-  exit 1
-fi
-
-# Copy .m file to pwd
-cp ${TAMEQDIR}/src/matlab/segmentation.m $PWD
-
-# Get MCR version
 MCRVER=$(cat ${SPM12STANDALONEDIR}/readme.txt | grep run_spm12.sh | grep /mathworks/home/application | awk -F/ '{print $NF}')
 
-# Run segmentation.m
-#/usr/local/spm12_standalone/run_spm12.sh /usr/local/MATLAB/MCR/v99 batch ./segmentation.m
-#spm batch ./segmentation.m
-${SPM12STANDALONEDIR}/run_spm12.sh ${MCRDIR}/${MCRVERSION} batch ./segmentation.m
+if [[ ${flag_nolog} = "false" ]]; then
+    logfile=${subjectdir}/tq-all.log
+    exec 3>&1
+    exec > >(
+    tee >(awk -v lf="${logfile}" '{
+            print strftime("[%F %T]"), $0 >> lf
+            fflush(lf)
+        }') >&3
+    ) 2>&1
 
-if [ $? -ne 0 ]; then
-  echo "SPM12 standalone does not work correctly."
-  echo "Switching to use MATLAB."
-  
-  # Add 'run batch' to the .m file
-  echo '' >> segmentation.m
-  echo "spm_jobman('run',matlabbatch);" >> segmentation.m
-
-  #Run segmentation.m
-  matlab -nodesktop -nosplash -r 'segmentation; exit'
+    echo -e "\ntq_20_segmentation.sh starts."
 fi
 
-# Delete .m file
-rm segmentation.m
+### Process
+# Gunzip input if necessary
+flag_gz=false
+if [[ "${inmri: -3}" = ".gz" ]]; then
+    flag_gz=true
+    TMPDIR1=$(mktemp -d)
+    cp ${inmri} ${TMPDIR1}
+    gunzip ${TMPDIR1}/$(basename ${inmri})
+    mv ${TMPDIR1}/$(basename ${inmri%.gz}) ${subjectdir}
+    rm -rf ${TMPDIR1}
+fi
 
-# Fill holes in c2 images, and mask out c1 from c2
-#for f in c1*_t1w_r.nii; do
-#  f=${f#c1}
-#  f=${f%.nii}
-#  fslmaths c2${f} -thr 0.3 -bin -fillh -binv c2${f}_invmask
-#  fslmaths c1${f} -mas c2${f}_invmask c1${f}_q
-#done
+# Replace MR_IMAGE_PATH with input MRI path in segmentation.m file and place it in subjectdir
+sed "/img/s#MR_IMAGE_PATH#${inmri%.gz}#g" ${TAMEQDIR}/src/matlab/segmentation.m > ${subjectdir}/segmentation.m
 
-exit
+# Run segmentation.m
+${SPM12STANDALONEDIR}/run_spm12.sh ${MCRDIR}/${MCRVERSION} batch ${subjectdir}/segmentation.m > /dev/null
+
+# Gzip SPM output
+TMPDIR2=$(mktemp -d)
+cp ${subjectdir}/c1$(basename ${inmri%.gz}) ${subjectdir}/c2$(basename ${inmri%.gz}) ${TMPDIR2}
+gzip -f ${TMPDIR2}/c1$(basename ${inmri%.gz})
+gzip -f ${TMPDIR2}/c2$(basename ${inmri%.gz})
+mv ${TMPDIR2}/c1$(basename ${inmri}) ${TMPDIR2}/c2$(basename ${inmri}) ${subjectdir}
+rm -rf ${TMPDIR2}
+
+exit 0
