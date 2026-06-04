@@ -26,7 +26,7 @@ Semi-quantification is crucial for analyzing PET images. This process often invo
 
 ### Common Setup Steps
 - On your host machine, create a folder named **`share`**.
-  This will be configured later as the shared folder between the host and the virtual environment. 
+  This will be configured later as the shared folder between the host and the virtual environment.  
   **Important:** If the host machine is running Windows OS and a shared folder is located on an external drive, the drive must be formatted with NTFS.
 - TAME-Q requires a **FreeSurfer** license.
   Please place your FreeSurfer license file (**`license.txt`**) directly under the **`share`** folder.
