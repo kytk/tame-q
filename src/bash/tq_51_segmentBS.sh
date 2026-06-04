@@ -87,6 +87,7 @@ fi
 
 ### Process
 if [[ $(find ${subjectdir}/freesurfer/${ID}/mri -name "brainstemSsLabels.v??.FSvoxelSpace.mgz" | wc -l) -lt 1 ]]; then
+    rm -f ${subjectdir}/freesurfer/${ID}/scripts/IsRunningBSsubst
     while [[ "$(pgrep -x segmentBS.sh -c)" -ge ${MAX_SEGMENTBS} ]]; do sleep 10s ; done
     echo "Run > segmentBS.sh ${ID} ${SUBJECTS_DIR}"
     segmentBS.sh ${ID} ${SUBJECTS_DIR} > /dev/null
