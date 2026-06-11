@@ -16,6 +16,10 @@ Semi-quantification is crucial for analyzing PET images. This process often invo
     5. Determination of reference values using signals in the cerebellar cortex
     6. Calculation of SUVR values for each region and creation of summary tables
 
+## Demo video
+Link to the [demo video (YouTube)](https://www.youtube.com/watch?v=RtIv32le5dY)  
+[<img src="https://github.com/user-attachments/assets/1f762a17-9ce9-49fc-9f4b-6c2e2073ea9b" width="50%">](https://www.youtube.com/watch?v=RtIv32le5dY)
+
 ## System Requirements
 - A preconfigured virtual environment for TAME-Q is publicly available, provided by Lin4Neuro (based on Ubuntu 22.04) on Docker. This virtual environment satisfies the below dependencies:
   - FSL (version 6.0.5.2 or later)
