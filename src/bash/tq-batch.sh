@@ -230,5 +230,11 @@ while true; do
     sleep 1s
 done
 
+echo "Merge ROI-SUVR table."
+${TAMEQDIR}/src/bash/tq-mergeresult.sh ${outdir}
+
+echo "Run QC scripts."
+${TAMEQDIR}/src/bash/tq-qc.sh ${outdir}
+
 echo "All jobs finished."
 exit 0
