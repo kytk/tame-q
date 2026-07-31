@@ -35,7 +35,10 @@ def determine_reference_voxel(pet, params, histogramfile=None):
     
     height1=bi_a1/bi_c1/pow(2*np.pi, 1/2)
     height2=bi_a2/bi_c2/pow(2*np.pi, 1/2)
-    if height1<height2/2 and params['monomodal']['dice']>0.936:
+    if bi_b1<histogram[0, 0] or bi_b1>histogram[0, -1]:
+        fwhm_min, fwhm_max=calc_fwhm(mono_b1, mono_c1)
+        out=np.where((fwhm_min<pet)&(pet<fwhm_max), 1, 0)
+    elif height1<height2/2 and params['monomodal']['dice']>0.936:
         fwhm_min, fwhm_max=calc_fwhm(mono_b1, mono_c1)
         out=np.where((fwhm_min<pet)&(pet<fwhm_max), 1, 0)
     else:

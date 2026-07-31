@@ -51,7 +51,7 @@ while [ "$#" -gt 0 ]; do
     esac
 done
 
-inmri=${subjectdir}/mri_mni.nii.gz
+inmri=${subjectdir}/mri.nii.gz
 
 if [[ ! -e "${inmri}" ]]; then
     echo "Error: Unable to find ${outdir}"
@@ -101,5 +101,9 @@ gzip -f ${TMPDIR2}/c1$(basename ${inmri%.gz})
 gzip -f ${TMPDIR2}/c2$(basename ${inmri%.gz})
 mv ${TMPDIR2}/c1$(basename ${inmri}) ${TMPDIR2}/c2$(basename ${inmri}) ${subjectdir}
 rm -rf ${TMPDIR2}
+
+flirt -dof 6 -in ${subjectdir}/c1$(basename ${inmri}) -ref ${subjectdir}/mri_mni.nii.gz -applyxfm -init ${subjectdir}/mri2MNI.mat -interp nearestneighbour -out ${subjectdir}/c1mri_mni.nii.gz
+
+flirt -dof 6 -in ${subjectdir}/c2$(basename ${inmri}) -ref ${subjectdir}/mri_mni.nii.gz -applyxfm -init ${subjectdir}/mri2MNI.mat -interp nearestneighbour -out ${subjectdir}/c2mri_mni.nii.gz
 
 exit 0

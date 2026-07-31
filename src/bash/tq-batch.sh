@@ -115,9 +115,9 @@ done
 ${TAMEQDIR}/src/bash/tq-logo.sh
 
 cleanup() {
-    tput rc 2>/dev/null || printf '\033[u'
-    tput cud $(( ${#IDs[@]} + 2 )) 2>/dev/null || printf '\033[%dB' $(( ${#IDs[@]} + 2 ))
-    tput el 2>/dev/null || printf '\033[K'
+    #tput rc 2>/dev/null || printf '\033[u'
+    #tput cud $(( ${#IDs[@]} + 2 )) 2>/dev/null || printf '\033[%dB' $(( ${#IDs[@]} + 2 ))
+    #tput el 2>/dev/null || printf '\033[K'
     echo
 
     tput cnorm 2>/dev/null || true
@@ -229,6 +229,12 @@ while true; do
 
     sleep 1s
 done
+
+echo "Merge ROI-SUVR table."
+${TAMEQDIR}/src/bash/tq-mergeresult.sh ${outdir}
+
+echo "Run QC scripts."
+${TAMEQDIR}/src/bash/tq-qc.sh ${outdir}
 
 echo "All jobs finished."
 exit 0
